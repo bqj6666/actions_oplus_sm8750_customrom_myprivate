@@ -1,0 +1,59 @@
+## top level
+kernel_platform
+vendor
+
+## kernel_platform
+MODULE.bazel
+WORKSPACE
+WORKSPACE.bzlmod
+build
+build_with_bazel.py
+common
+common-modules
+external
+msm-kernel
+oplus
+prebuilts
+qcom
+tools
+
+## kernel_platform/tools
+bazel
+mkbootimg
+
+## vendor present?
+nxp
+oplus
+qcom
+st
+
+## kernel_platform/vendor?
+ls: cannot access 'kernel_platform/vendor': No such file or directory
+
+## wlan tree
+fw-api
+platform
+qca-wifi-host-cmn
+qcacld-3.0
+utils
+wlan-devicetree
+
+## qcacld bazel files
+vendor/qcom/opensource/wlan/qcacld-3.0/BUILD.bazel
+vendor/qcom/opensource/wlan/qcacld-3.0/target_variants.bzl
+vendor/qcom/opensource/wlan/qcacld-3.0/wlan_qcacld3_modules.bzl
+
+## target variants (sun/peach)
+4:    "sun",
+17:    "sun-allyes",
+31:    "sun",
+
+## wonder dir
+BUILD.bazel
+oplus_connectivity_routerboost
+oplus_connectivity_sla
+oplus_local_modules.bzl
+oplus_wifi_swtp
+oplus_wifi_wsa
+oplus_wificapcenter
+wonder
