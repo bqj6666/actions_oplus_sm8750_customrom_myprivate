@@ -1,0 +1,49 @@
+Computing main repo mapping: 
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/msm-kernel/arch/arm64/boot/dts/vendor/oplus/platform_map.bzl:141:14: WRNING: sdxkova.cpe.wkk not in device tree platform map!
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/msm-kernel/arch/arm64/boot/dts/vendor/oplus/platform_map.bzl:141:14: WRNING: sdxkova.cpe.wkk not in device tree platform map!
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/msm-kernel/arch/arm64/boot/dts/vendor/oplus/platform_map.bzl:141:14: WRNING: sdxkova.cpe.wkk not in device tree platform map!
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/msm-kernel/arch/arm64/boot/dts/vendor/oplus/platform_map.bzl:141:14: WRNING: sdxkova.cpe.wkk not in device tree platform map!
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/msm-kernel/arch/arm64/boot/dts/vendor/oplus/platform_map.bzl:141:14: WRNING: parrot-tuivm not in device tree platform map!
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/msm-kernel/arch/arm64/boot/dts/vendor/oplus/platform_map.bzl:141:14: WRNING: parrot-tuivm not in device tree platform map!
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/msm-kernel/arch/arm64/boot/dts/vendor/oplus/platform_map.bzl:141:14: WRNING: parrot-tuivm not in device tree platform map!
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/msm-kernel/arch/arm64/boot/dts/vendor/oplus/platform_map.bzl:141:14: WRNING: parrot-tuivm not in device tree platform map!
+Loading: 
+Loading: 2 packages loaded
+Analyzing: target //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist (2 packages loaded, 0 targets configured)
+Analyzing: target //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist (37 packages loaded, 7 targets configured)
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= consolidate
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= gki
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= perf
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= consolidate
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= gki
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= perf
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= consolidate
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= gki
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= perf
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= consolidate
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= gki
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= perf
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= consolidate
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= gki
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= perf
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= consolidate
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= gki
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= perf
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= perf-defconfig
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= debug-defconfig
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= defconfig
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= debug-defconfig
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= defconfig
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= debug-defconfig
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= defconfig
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= debug-defconfig
+DEBUG: /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/vendor/qcom/opensource/wlan/platform/wlan_platform_modules.bzl:389:14: v= defconfig
+Analyzing: target //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist (64 packages loaded, 40798 targets configured)
+Analyzing: target //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist (67 packages loaded, 95219 targets configured)
+Analyzing: target //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist (70 packages loaded, 100327 targets configured)
+INFO: Analyzed target //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist (71 packages loaded, 195368 targets configured).
+ checking cached actions
+INFO: Found 1 target...
+INFO: Elapsed time: 19.234s, Critical Path: 0.00s
+INFO: 0 processes.
+INFO: Build completed successfully, 0 total actions

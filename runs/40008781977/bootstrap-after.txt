@@ -1,0 +1,2 @@
+lrwxrwxrwx 1 runner runner 46 Oct 23 19:11 build/abl_extensions.bzl -> ../bootable/bootloader/edk2/abl_extensions.bzl
+lrwxrwxrwx 1 runner runner 39 Oct 23 19:11 build/msm_kernel_extensions.bzl -> ../msm-kernel/msm_kernel_extensions.bzl

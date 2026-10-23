@@ -1,0 +1,14 @@
+## msm-kernel root bzl
+msm-kernel/abi.bzl
+msm-kernel/allyes_images.bzl
+msm-kernel/avb_boot_img.bzl
+msm-kernel/consolidate.bzl
+msm-kernel/consolidate_16k.bzl
+msm-kernel/image_opts.bzl
+msm-kernel/modules.bzl
+msm-kernel/monaco.bzl
+msm-kernel/msm_abl.bzl
+msm-kernel/msm_common.bzl
+
+## build/*.bzl before
+ls: cannot access 'build/*.bzl': No such file or directory
