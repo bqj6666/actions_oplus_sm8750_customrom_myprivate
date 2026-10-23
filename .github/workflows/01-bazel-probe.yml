@@ -57,6 +57,19 @@ jobs:
             grep -n -A6 -B2 '"sun"' vendor/qcom/opensource/wlan/qcacld-3.0/target_variants.bzl 2>&1 | head -40
           } | tee "$GITHUB_WORKSPACE/logs/structure.txt"
 
+      - name: Bootstrap bazel extension symlinks
+        working-directory: ${{ github.workspace }}/src/kernel_platform
+        run: |
+          {
+            echo "## msm-kernel root bzl"; ls -1 msm-kernel/*.bzl 2>&1 | head -10
+            echo; echo "## build/*.bzl before"; ls -1 build/*.bzl 2>&1 | head -10
+          } | tee "$GITHUB_WORKSPACE/logs/bootstrap-before.txt"
+          ln -sfn ../msm-kernel/msm_kernel_extensions.bzl build/msm_kernel_extensions.bzl
+          [ -e build/abl_extensions.bzl ] || \
+            ln -sfn ../bootable/bootloader/edk2/abl_extensions.bzl build/abl_extensions.bzl 2>/dev/null || true
+          ls -l build/msm_kernel_extensions.bzl build/abl_extensions.bzl 2>&1 \
+            | tee "$GITHUB_WORKSPACE/logs/bootstrap-after.txt"
+
       - name: Enumera targets
         working-directory: ${{ github.workspace }}/src/kernel_platform
         run: |
