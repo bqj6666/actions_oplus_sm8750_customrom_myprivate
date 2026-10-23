@@ -1,0 +1,60 @@
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1219: warning: ignoring old recipe for target 'dtbs'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1536: warning: overriding recipe for target 'dtbs_install'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1229: warning: ignoring old recipe for target 'dtbs_install'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1546: warning: overriding recipe for target 'scripts_dtc'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1239: warning: ignoring old recipe for target 'scripts_dtc'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1554: warning: overriding recipe for target 'dt_binding_check'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1247: warning: ignoring old recipe for target 'dt_binding_check'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1518: warning: overriding recipe for target 'dtbs'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1219: warning: ignoring old recipe for target 'dtbs'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1536: warning: overriding recipe for target 'dtbs_install'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1229: warning: ignoring old recipe for target 'dtbs_install'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1546: warning: overriding recipe for target 'scripts_dtc'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1239: warning: ignoring old recipe for target 'scripts_dtc'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1554: warning: overriding recipe for target 'dt_binding_check'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/124/execroot/_main/msm-kernel/Makefile:1247: warning: ignoring old recipe for target 'dt_binding_check'
+"MACRO DOPLUS_VND_BUILD_PLATFORM="
+"MACRO DOPLUS_VND_BUILD_CHIPSET_COMPANY="
+"CONFIG_OPLUS_DEVICE_INFO_MTK_PLATFORM is "
+CONFIG_TMS_NFC_DEVICE = m
+CONFIG_TMS_ESE_DEVICE = m
+CONFIG_TMS_GUIDE_DEVICE = 
+TMS_DEVICES = m
+[596 / 608] [Prepa] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/platform:sun_perf_wlan_firmware_service
+[596 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/platform:sun_perf_wlan_firmware_service; 1s processwrapper-sandbox ... (2 actions running)
+[597 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/datarmnet-ext/mem:sun_perf_rmnet_mem; 9s processwrapper-sandbox ... (2 actions, 1 running)
+[598 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_gsim; 1s processwrapper-sandbox ... (2 actions running)
+[599 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_gsim; 5s processwrapper-sandbox ... (2 actions, 1 running)
+[600 / 608] [Prepa] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/platform:sun_perf_cnss_prealloc ... (2 actions, 1 running)
+[600 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/platform:sun_perf_cnss_nl; 2s processwrapper-sandbox ... (2 actions running)
+[601 / 608] [Prepa] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam ... (2 actions, 1 running)
+[602 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 1s processwrapper-sandbox ... (2 actions running)
+[603 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 6s processwrapper-sandbox ... (2 actions, 1 running)
+[603 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 7s processwrapper-sandbox ... (2 actions running)
+[604 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 12s processwrapper-sandbox ... (2 actions, 1 running)
+[604 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 13s processwrapper-sandbox ... (2 actions running)
+[604 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 24s processwrapper-sandbox ... (2 actions running)
+[605 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 27s processwrapper-sandbox
+[605 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 38s processwrapper-sandbox
+[606 / 608] [Prepa] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2
+[606 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 1s processwrapper-sandbox
+[606 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 11s processwrapper-sandbox
+[606 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 41s processwrapper-sandbox
+[606 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 101s processwrapper-sandbox
+[606 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 161s processwrapper-sandbox
+[606 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 221s processwrapper-sandbox
+[606 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 281s processwrapper-sandbox
+[606 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 341s processwrapper-sandbox
+[606 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 401s processwrapper-sandbox
+[606 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 461s processwrapper-sandbox
+[606 / 608] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 521s processwrapper-sandbox
+[607 / 608] checking cached actions
+[607 / 608] Copying outputs @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 0s processwrapper-sandbox
+INFO: Found 1 target...
+Target //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist up-to-date:
+  bazel-bin/vendor/qcom/opensource/wlan/qcacld-3.0/sun_perf_peach-v2_modules_dist
+INFO: Elapsed time: 2572.575s, Critical Path: 2518.08s
+INFO: 608 processes: 472 internal, 136 processwrapper-sandbox.
+INFO: Build completed successfully, 608 total actions
+INFO: Running command line: bazel-bin/vendor/qcom/opensource/wlan/qcacld-3.0/sun_perf_peach-v2_modules_dist '--dist_dir=/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist'
+[dist] INFO: Copying to /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist

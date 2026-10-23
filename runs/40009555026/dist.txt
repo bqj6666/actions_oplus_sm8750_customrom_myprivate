@@ -1,0 +1,11 @@
+## dist listing
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist:
+total 499912
+-rw-r--r-- 1 runner runner 511908416 Oct 23 19:59 qca_cld3_peach_v2.ko
+-rw-r--r-- 1 runner runner         0 Oct 23 19:59 sun_perf_qca_cld_peach-v2.check_no_remaining
+-rw-r--r-- 1 runner runner         0 Oct 23 19:59 sun_perf_qca_cld_peach-v2_Module.symvers
+
+## vermagic + sha256
+qca_cld3_peach_v2.ko
+  vermagic=6.6.118-android15-8-o-g6028f47fadda-4k SMP preempt mod_unload modversions aarch64
+997474ec8a5e2379296b1227316f2cf439c6fc6cc3fd1d3cb31c6b7651605185  /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist/qca_cld3_peach_v2.ko
