@@ -1,0 +1,4 @@
+Computing main repo mapping: 
+WARNING: Target pattern parsing failed.
+ERROR: Skipping '//msm-kernel:skip_abi': error loading package 'msm-kernel': at /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/msm-kernel/msm_platforms.bzl:1:6: cannot load '//build:msm_kernel_extensions.bzl': no such file
+ERROR: //msm-kernel:skip_abi :: Error loading option //msm-kernel:skip_abi: error loading package 'msm-kernel': at /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform/msm-kernel/msm_platforms.bzl:1:6: cannot load '//build:msm_kernel_extensions.bzl': no such file
