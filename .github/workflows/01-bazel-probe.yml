@@ -1,0 +1,104 @@
+name: 01 Bazel Probe
+
+# 侦察第二级：把 vendor 挂进 kernel_platform，枚举 WLAN 的 bazel 目标，
+# 并对 sun_perf_peach-v2 做一次 analysis-only（--nobuild，不产出 .ko）。
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/01-bazel-probe.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Free disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+                      /opt/hostedtoolcache/CodeQL /usr/local/share/boost || true
+          df -h /
+
+      - name: Install repo tool
+        run: |
+          mkdir -p "$HOME/bin"
+          curl -fsSL https://storage.googleapis.com/git-repo-downloads/repo -o "$HOME/bin/repo"
+          chmod +x "$HOME/bin/repo"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Sync manifest
+        working-directory: ${{ github.workspace }}
+        run: |
+          mkdir -p src logs && cd src
+          git config --global http.version HTTP/1.1
+          repo init -u https://github.com/OnePlusOSS/kernel_manifest \
+                    -b oneplus/sm8750 -m oneplus_13_b.xml \
+                    --depth=1 --partial-clone --clone-filter=blob:limit=1m
+          repo sync -n -c --no-tags -j4 --fail-fast 2>&1 | tail -5
+          repo sync -l -j4 --fail-fast 2>&1 | tail -5
+          repo manifest -r -o "$GITHUB_WORKSPACE/logs/manifest-locked.xml"
+          df -h / | tee "$GITHUB_WORKSPACE/logs/disk.txt"
+
+      - name: Wire vendor into kernel_platform
+        working-directory: ${{ github.workspace }}/src
+        run: |
+          ln -sfn ../vendor kernel_platform/vendor
+          ls -l kernel_platform/vendor
+          {
+            echo "## kernel_platform/qcom"; ls -1 kernel_platform/qcom 2>&1 | head -20
+            echo; echo "## kernel_platform/oplus"; ls -1 kernel_platform/oplus 2>&1 | head -20
+            echo; echo "## vendor/oplus/kernel/wifi/wonder"; ls -1 vendor/oplus/kernel/wifi/wonder 2>&1 | head -30
+            echo; echo "## wonder BUILD.bazel"; sed -n '1,40p' vendor/oplus/kernel/wifi/wonder/BUILD.bazel 2>&1
+            echo; echo "## target_variants sun block"
+            grep -n -A6 -B2 '"sun"' vendor/qcom/opensource/wlan/qcacld-3.0/target_variants.bzl 2>&1 | head -40
+          } | tee "$GITHUB_WORKSPACE/logs/structure.txt"
+
+      - name: Enumera targets
+        working-directory: ${{ github.workspace }}/src/kernel_platform
+        run: |
+          OUT="$GITHUB_WORKSPACE/logs/targets.txt"
+          {
+            echo "## all targets under qcacld-3.0"
+            ./tools/bazel --output_user_root="$GITHUB_WORKSPACE/bazel-cache" \
+              query 'kind(".*", //vendor/qcom/opensource/wlan/qcacld-3.0:all)' 2>&1 | head -80
+            echo; echo "## sun/peach targets"
+            ./tools/bazel --output_user_root="$GITHUB_WORKSPACE/bazel-cache" \
+              query 'filter("peach", //vendor/qcom/opensource/wlan/qcacld-3.0:all)' 2>&1 | head -40
+          } | tee "$OUT"
+
+      - name: Analysis only (nobuild)
+        working-directory: ${{ github.workspace }}/src/kernel_platform
+        run: |
+          OUT="$GITHUB_WORKSPACE/logs/analysis.txt"
+          ./tools/bazel --output_user_root="$GITHUB_WORKSPACE/bazel-cache" \
+            build --nobuild --jobs=2 \
+            --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true \
+            --config=stamp \
+            --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom \
+            //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist 2>&1 \
+            | tail -120 | tee "$OUT"
+
+      - name: Publish logs to ci/logs branch
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          RURL="https://github.com/${GITHUB_REPOSITORY}.git"
+          CH='!gh auth git-credential'
+          rm -rf /tmp/logrepo
+          if ! git -c credential.helper="$CH" clone -q --depth=1 --branch ci/logs "$RURL" /tmp/logrepo 2>/dev/null; then
+            mkdir -p /tmp/logrepo && cd /tmp/logrepo && git init -q && git checkout -q -b ci/logs
+            git remote add origin "$RURL"
+          fi
+          cd /tmp/logrepo
+          mkdir -p "runs/${{ github.run_id }}"
+          cp -r "$GITHUB_WORKSPACE/logs/." "runs/${{ github.run_id }}/"
+          git add -A
+          git -c user.name=bqj6666 -c user.email=bqj6666@users.noreply.github.com \
+              commit -q -m "ci: bazel probe logs for run ${{ github.run_id }}" || true
+          git -c credential.helper="$CH" push -q origin ci/logs
