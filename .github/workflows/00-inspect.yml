@@ -2,6 +2,7 @@ name: 00 Inspect Source Tree
 
 # 只做侦察：同步 manifest、核对目录布局、问 bazel 目标是否存在。
 # 不编译、不产出、不改任何设备。
+# 结果：写入 runs/<id>/*.txt 并提交到 ci/logs 分支（公开仓库，便于匿名读取）。
 
 on:
   workflow_dispatch:
@@ -10,7 +11,7 @@ on:
       - '.github/workflows/00-inspect.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   inspect:
@@ -38,8 +39,8 @@ jobs:
         run: |
           mkdir -p src logs && cd src
           git config --global http.version HTTP/1.1
-          git config --global user.name  "ci"
-          git config --global user.email "ci@example.invalid"
+          git config --global user.name  "bqj6666"
+          git config --global user.email "bqj6666@users.noreply.github.com"
           repo init -u https://github.com/OnePlusOSS/kernel_manifest \
                     -b oneplus/sm8750 -m oneplus_13_b.xml \
                     --depth=1 --partial-clone --clone-filter=blob:limit=1m
@@ -56,7 +57,7 @@ jobs:
           repo sync -l -j4 --fail-fast 2>&1 \
             | tee "$GITHUB_WORKSPACE/logs/sync-2.log" | tail -40
           repo manifest -r -o "$GITHUB_WORKSPACE/logs/manifest-locked.xml"
-          df -h /
+          df -h / | tee "$GITHUB_WORKSPACE/logs/disk.txt"
 
       - name: Dump layout
         working-directory: ${{ github.workspace }}/src
@@ -90,10 +91,31 @@ jobs:
               query 'kind(".*_dist", //vendor/qcom/opensource/wlan/qcacld-3.0:all)' 2>&1 | head -60
           } | tee "$OUT"
 
-      - name: Upload logs
+      - name: Upload artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: inspect-logs
           path: logs/
           retention-days: 7
+
+      - name: Publish logs to ci/logs branch
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          RURL="https://github.com/${GITHUB_REPOSITORY}.git"
+          CH='!gh auth git-credential'
+          rm -rf /tmp/logrepo
+          if ! git -c credential.helper="$CH" clone -q --depth=1 --branch ci/logs "$RURL" /tmp/logrepo 2>/dev/null; then
+            mkdir -p /tmp/logrepo && cd /tmp/logrepo && git init -q && git checkout -q -b ci/logs
+            git remote add origin "$RURL"
+          fi
+          cd /tmp/logrepo
+          mkdir -p "runs/${{ github.run_id }}"
+          cp -r "$GITHUB_WORKSPACE/logs/." "runs/${{ github.run_id }}/"
+          git add -A
+          git -c user.name=bqj6666 -c user.email=bqj6666@users.noreply.github.com \
+              commit -q -m "ci: inspect logs for run ${{ github.run_id }}" || true
+          git -c credential.helper="$CH" push -q origin ci/logs
