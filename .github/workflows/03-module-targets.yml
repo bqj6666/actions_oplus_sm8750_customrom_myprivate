@@ -1,0 +1,83 @@
+name: 03 Module Targets
+
+# 侦察：列出 msm-kernel 里 cfg80211 / mac80211 与 vendor_dlkm 相关的 bazel 目标。
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/03-module-targets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  query:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Free disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+                      /opt/hostedtoolcache/CodeQL /usr/share/swift || true
+
+      - name: Install repo tool
+        run: |
+          mkdir -p "$HOME/bin"
+          curl -fsSL https://storage.googleapis.com/git-repo-downloads/repo -o "$HOME/bin/repo"
+          chmod +x "$HOME/bin/repo"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Sync
+        working-directory: ${{ github.workspace }}
+        run: |
+          mkdir -p src logs && cd src
+          git config --global http.version HTTP/1.1
+          repo init -u https://github.com/OnePlusOSS/kernel_manifest -b oneplus/sm8750 \
+                    -m oneplus_13_b.xml --depth=1 --partial-clone --clone-filter=blob:limit=1m
+          repo sync -n -c --no-tags -j4 --fail-fast 2>&1 | tail -3
+          repo sync -l -j4 --fail-fast 2>&1 | tail -3
+
+      - name: Bootstrap
+        working-directory: ${{ github.workspace }}/src/kernel_platform
+        run: |
+          ln -sfn ../vendor vendor
+          ln -sfn ../msm-kernel/msm_kernel_extensions.bzl build/msm_kernel_extensions.bzl
+          [ -e build/abl_extensions.bzl ] || ln -sfn ../bootable/bootloader/edk2/abl_extensions.bzl build/abl_extensions.bzl 2>/dev/null || true
+
+      - name: Query msm-kernel targets
+        working-directory: ${{ github.workspace }}/src/kernel_platform
+        run: |
+          B=./tools/bazel
+          O="--output_user_root=$GITHUB_WORKSPACE/bazel-cache"
+          {
+            echo "## labels containing cfg80211"
+            $B $O query '//msm-kernel:*' 2>/dev/null | grep -i cfg80211 | head -30
+            echo; echo "## labels containing mac80211"
+            $B $O query '//msm-kernel:*' 2>/dev/null | grep -i mac80211 | head -30
+            echo; echo "## sun_perf module targets"
+            $B $O query '//msm-kernel:*' 2>/dev/null | grep -E 'sun_perf' | head -40
+            echo; echo "## any *_modules / *_dist"
+            $B $O query '//msm-kernel:*' 2>/dev/null | grep -E '_modules($|_)|_dist$' | head -40
+          } | tee "$GITHUB_WORKSPACE/logs/msm-targets.txt"
+
+      - name: Publish logs
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          RURL="https://github.com/${GITHUB_REPOSITORY}.git"
+          CH='!gh auth git-credential'
+          rm -rf /tmp/logrepo
+          if ! git -c credential.helper="$CH" clone -q --depth=1 --branch ci/logs "$RURL" /tmp/logrepo 2>/dev/null; then
+            mkdir -p /tmp/logrepo && cd /tmp/logrepo && git init -q && git checkout -q -b ci/logs
+            git remote add origin "$RURL"
+          fi
+          cd /tmp/logrepo
+          mkdir -p "runs/${{ github.run_id }}"
+          cp -r "$GITHUB_WORKSPACE/logs/." "runs/${{ github.run_id }}/"
+          git add -A
+          git -c user.name=bqj6666 -c user.email=bqj6666@users.noreply.github.com \
+              commit -q -m "ci: module target query for run ${{ github.run_id }}" || true
+          git -c credential.helper="$CH" push -q origin ci/logs
