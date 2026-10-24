@@ -1,0 +1,20 @@
+WARNING: Ignoring JAVA_HOME, because it must point to a JDK, not a JRE.
+WARNING: Option 'local_ram_resources' is deprecated: --local_ram_resources is deprecated, please use --local_resources=memory= instead.
+Computing main repo mapping: 
+WARNING: Option 'local_ram_resources' is deprecated: --local_ram_resources is deprecated, please use --local_resources=memory= instead.
+Loading: 
+Loading: 0 packages loaded
+Analyzing: target //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist (0 packages loaded, 0 targets configured)
+INFO: Analyzed target //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist (0 packages loaded, 0 targets configured).
+[0 / 1] [Prepa] BazelWorkspaceStatusAction stable-status.txt
+INFO: From BazelWorkspaceStatusAction stable-status.txt:
+WARNING: Skipping project /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src because it is not below /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/src/kernel_platform
+[31 / 50] checking cached actions
+INFO: Found 1 target...
+Target //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist up-to-date:
+  bazel-bin/vendor/qcom/opensource/wlan/qcacld-3.0/sun_perf_peach-v2_modules_dist
+INFO: Elapsed time: 5.828s, Critical Path: 2.72s
+INFO: 1 process: 1 internal.
+INFO: Build completed successfully, 1 total action
+INFO: Running command line: bazel-bin/vendor/qcom/opensource/wlan/qcacld-3.0/sun_perf_peach-v2_modules_dist '--dist_dir=/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist'
+[dist] INFO: Copying to /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist

@@ -1,0 +1,3 @@
+//msm-kernel:sun_perf/cfg80211.ko
+//msm-kernel:sun_perf/mac80211.ko
+//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist

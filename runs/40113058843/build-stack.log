@@ -1,0 +1,40 @@
+TMS_DEVICES = m
+[600 / 614] [Prepa] Repackaging modules_staging_archive (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//msm-kernel:sun_perf
+[600 / 614] Repackaging modules_staging_archive (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//msm-kernel:sun_perf; 1s processwrapper-sandbox ... (2 actions running)
+[601 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/platform:sun_perf_wlan_firmware_service; 7s processwrapper-sandbox ... (2 actions, 1 running)
+[601 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/platform:sun_perf_wlan_firmware_service; 9s processwrapper-sandbox ... (2 actions running)
+[602 / 614] [Prepa] Checking for kmi_symbol_list_violations (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//msm-kernel:sun_perf ... (2 actions, 1 running)
+[602 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/datarmnet-ext/mem:sun_perf_rmnet_mem; 4s processwrapper-sandbox ... (2 actions running)
+[603 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/datarmnet-ext/mem:sun_perf_rmnet_mem; 7s processwrapper-sandbox ... (2 actions, 1 running)
+[604 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/platform:sun_perf_cnss_plat_ipc_qmi_svc; 1s processwrapper-sandbox ... (2 actions running)
+[605 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_gsim; 4s processwrapper-sandbox
+[605 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_gsim; 5s processwrapper-sandbox ... (2 actions running)
+[606 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/platform:sun_perf_cnss_nl; 2s processwrapper-sandbox ... (2 actions running)
+[607 / 614] [Prepa] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam ... (2 actions, 1 running)
+[608 / 614] [Prepa] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/data-kernel/drivers/smem-mailbox:sun_perf_smem_mailbox ... (2 actions, 1 running)
+[608 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 2s processwrapper-sandbox ... (2 actions running)
+[609 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 7s processwrapper-sandbox ... (2 actions, 1 running)
+[609 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 8s processwrapper-sandbox ... (2 actions running)
+[610 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 13s processwrapper-sandbox ... (2 actions, 1 running)
+[610 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 14s processwrapper-sandbox ... (2 actions running)
+[610 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 24s processwrapper-sandbox ... (2 actions running)
+[611 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 28s processwrapper-sandbox
+[611 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/dataipa:sun_perf_ipam; 39s processwrapper-sandbox
+[612 / 614] [Prepa] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2
+[612 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 1s processwrapper-sandbox
+[612 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 11s processwrapper-sandbox
+[612 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 41s processwrapper-sandbox
+[612 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 101s processwrapper-sandbox
+[612 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 161s processwrapper-sandbox
+[612 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 221s processwrapper-sandbox
+[612 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 281s processwrapper-sandbox
+[612 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 341s processwrapper-sandbox
+[612 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 401s processwrapper-sandbox
+[612 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 461s processwrapper-sandbox
+[612 / 614] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 521s processwrapper-sandbox
+[613 / 614] [Prepa] Copying outputs @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2
+INFO: Found 3 targets...
+[614 / 614] checking cached actions
+INFO: Elapsed time: 2552.728s, Critical Path: 2506.27s
+INFO: 614 processes: 476 internal, 138 processwrapper-sandbox.
+INFO: Build completed successfully, 614 total actions
