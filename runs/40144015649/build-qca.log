@@ -1,0 +1,20 @@
+[154 / 156] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 1s processwrapper-sandbox
+[154 / 156] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 11s processwrapper-sandbox
+[154 / 156] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 41s processwrapper-sandbox
+[154 / 156] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 101s processwrapper-sandbox
+[154 / 156] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 161s processwrapper-sandbox
+[154 / 156] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 221s processwrapper-sandbox
+[154 / 156] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 281s processwrapper-sandbox
+[154 / 156] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 341s processwrapper-sandbox
+[154 / 156] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 401s processwrapper-sandbox
+[154 / 156] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 461s processwrapper-sandbox
+[154 / 156] Building external kernel module (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2; 521s processwrapper-sandbox
+[155 / 156] [Prepa] Copying outputs @@//vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_qca_cld_peach-v2
+INFO: Found 1 target...
+Target //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist up-to-date:
+  bazel-bin/vendor/qcom/opensource/wlan/qcacld-3.0/sun_perf_peach-v2_modules_dist
+INFO: Elapsed time: 666.395s, Critical Path: 637.85s
+INFO: 143 processes: 67 internal, 76 processwrapper-sandbox.
+INFO: Build completed successfully, 143 total actions
+INFO: Running command line: bazel-bin/vendor/qcom/opensource/wlan/qcacld-3.0/sun_perf_peach-v2_modules_dist '--dist_dir=/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist'
+[dist] INFO: Copying to /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist

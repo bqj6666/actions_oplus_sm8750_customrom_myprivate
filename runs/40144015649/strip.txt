@@ -1,0 +1,7 @@
+cfg80211.ko 10201736 -> 2070456
+cnss2.ko 4398288 -> 940576
+cnss_prealloc.ko 265800 -> 25392
+cnss_utils.ko 407600 -> 34704
+mac80211.ko 17277376 -> 1963888
+qca_cld3_peach_v2.ko 511908416 -> 19718512
+wlan_firmware_service.ko 364424 -> 96776

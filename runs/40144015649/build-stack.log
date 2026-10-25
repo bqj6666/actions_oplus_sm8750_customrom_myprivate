@@ -1,0 +1,30 @@
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1536: warning: overriding recipe for target 'dtbs_install'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1229: warning: ignoring old recipe for target 'dtbs_install'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1546: warning: overriding recipe for target 'scripts_dtc'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1239: warning: ignoring old recipe for target 'scripts_dtc'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1554: warning: overriding recipe for target 'dt_binding_check'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1247: warning: ignoring old recipe for target 'dt_binding_check'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1518: warning: overriding recipe for target 'dtbs'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1219: warning: ignoring old recipe for target 'dtbs'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1536: warning: overriding recipe for target 'dtbs_install'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1229: warning: ignoring old recipe for target 'dtbs_install'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1546: warning: overriding recipe for target 'scripts_dtc'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1239: warning: ignoring old recipe for target 'scripts_dtc'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1554: warning: overriding recipe for target 'dt_binding_check'
+/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/bazel-cache/e236b752d8c61557aaf8a4319d4294de/sandbox/processwrapper-sandbox/60/execroot/_main/msm-kernel/Makefile:1247: warning: ignoring old recipe for target 'dt_binding_check'
+"MACRO DOPLUS_VND_BUILD_PLATFORM="
+"MACRO DOPLUS_VND_BUILD_CHIPSET_COMPANY="
+"CONFIG_OPLUS_DEVICE_INFO_MTK_PLATFORM is "
+CONFIG_TMS_NFC_DEVICE = m
+CONFIG_TMS_ESE_DEVICE = m
+CONFIG_TMS_GUIDE_DEVICE = 
+TMS_DEVICES = m
+[470 / 472] [Prepa] Repackaging modules_staging_archive (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//msm-kernel:sun_perf
+[470 / 472] Repackaging modules_staging_archive (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//msm-kernel:sun_perf; 1s processwrapper-sandbox
+[471 / 472] [Prepa] Checking for kmi_symbol_list_violations (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//msm-kernel:sun_perf
+[471 / 472] Checking for kmi_symbol_list_violations (arm64_4k;lto=default;notrim;zstd_dwarf_compression_disabled) @@//msm-kernel:sun_perf; 1s processwrapper-sandbox
+INFO: Found 2 targets...
+[472 / 472] checking cached actions
+INFO: Elapsed time: 1935.030s, Critical Path: 1908.91s
+INFO: 472 processes: 410 internal, 62 processwrapper-sandbox.
+INFO: Build completed successfully, 472 total actions

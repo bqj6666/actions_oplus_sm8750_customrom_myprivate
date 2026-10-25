@@ -1,0 +1,34 @@
+## dist
+total 24284
+-rwxr--r-- 1 runner runner  2070456 Oct 25 00:34 cfg80211.ko
+-rwxr--r-- 1 runner runner   940576 Oct 25 00:34 cnss2.ko
+-rwxr--r-- 1 runner runner    25392 Oct 25 00:34 cnss_prealloc.ko
+-rwxr--r-- 1 runner runner    34704 Oct 25 00:34 cnss_utils.ko
+-rwxr--r-- 1 runner runner  1963888 Oct 25 00:34 mac80211.ko
+-rw-r--r-- 1 runner runner 19718512 Oct 25 00:34 qca_cld3_peach_v2.ko
+-rw-r--r-- 1 runner runner        0 Oct 25 00:34 sun_perf_qca_cld_peach-v2.check_no_remaining
+-rw-r--r-- 1 runner runner        0 Oct 25 00:34 sun_perf_qca_cld_peach-v2_Module.symvers
+-rwxr--r-- 1 runner runner    96776 Oct 25 00:34 wlan_firmware_service.ko
+
+## vermagic + sha256
+cfg80211.ko
+  vermagic=6.6.118-android15-8-o-g6028f47fadda-4k SMP preempt mod_unload modversions aarch64
+abe7a0a8cddfb9c1a46b35b428304f0669e5a4fad0dcc1490d185d77ce309a4e  /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist/cfg80211.ko
+cnss2.ko
+  vermagic=6.6.118-android15-8-o-g6028f47fadda-4k SMP preempt mod_unload modversions aarch64
+bd8535640bc8e20f286543ad007f3c361378832135f44621b91ed00e1d4e9e1b  /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist/cnss2.ko
+cnss_prealloc.ko
+  vermagic=6.6.118-android15-8-o-g6028f47fadda-4k SMP preempt mod_unload modversions aarch64
+74d47acae88c6d59e493aaaff802bc2f36a5796a4f3f0c42f6487028632f7f0b  /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist/cnss_prealloc.ko
+cnss_utils.ko
+  vermagic=6.6.118-android15-8-o-g6028f47fadda-4k SMP preempt mod_unload modversions aarch64
+50eecf61d44e27cae3337a9a01238590e122aafa0113dbe11f7f5d0bf394ce32  /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist/cnss_utils.ko
+mac80211.ko
+  vermagic=6.6.118-android15-8-o-g6028f47fadda-4k SMP preempt mod_unload modversions aarch64
+8b838f5c800082221442d74effa75e22065ef15b77f107824e0d0a7551855487  /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist/mac80211.ko
+qca_cld3_peach_v2.ko
+  vermagic=6.6.118-android15-8-o-g6028f47fadda-4k SMP preempt mod_unload modversions aarch64
+028475037456552f5010794408b4e6cdd3e7509e0ab9f3cf08cc78ff73de57df  /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist/qca_cld3_peach_v2.ko
+wlan_firmware_service.ko
+  vermagic=6.6.118-android15-8-o-g6028f47fadda-4k SMP preempt mod_unload modversions aarch64
+7610b762f1481d5b979d357f0ffaff7006c05bda31bf106b3151dab716e28e98  /home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/dist/wlan_firmware_service.ko
