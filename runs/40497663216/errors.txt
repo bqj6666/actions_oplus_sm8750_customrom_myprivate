@@ -1,0 +1,6 @@
+4294:ld.lld: error: undefined symbol: memmem
+4304:ld.lld: error: .btf.vmlinux.bin.o: unknown file type
+4305:make[3]: *** [/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/kernel_workspace/common/scripts/Makefile.vmlinux:37: vmlinux] Error 1
+4306:make[2]: *** [/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/kernel_workspace/common/Makefile:1267: vmlinux] Error 2
+4307:make[1]: *** [/home/runner/work/actions_oplus_sm8750_customrom_myprivate/actions_oplus_sm8750_customrom_myprivate/kernel_workspace/common/Makefile:252: __sub-make] Error 2
+4309:make: *** [Makefile:252: __sub-make] Error 2
