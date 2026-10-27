@@ -1,7 +1,6 @@
 name: 11 Trigger kernel hide build
 
-# 用 GITHUB_TOKEN 以 workflow_dispatch 方式触发 10 号构建，
-# 这样 inputs 才有默认值（push 事件下 inputs 为空，会让 Setup BakaSU 被跳过）。
+# 用 GITHUB_TOKEN 以 workflow_dispatch 触发 10 号构建（对齐现内核配置，仅关掉 droidspaces）。
 
 on:
   push:
@@ -27,8 +26,28 @@ jobs:
             --ref "${GITHUB_REF_NAME}" \
             -f ksu_type=BakaSU \
             -f SUSFS=true \
+            -f lz4_enable=true \
+            -f lz4kd_enable=true \
+            -f bbr_enable=true \
+            -f adios_enable=true \
+            -f rekernel_enable=true \
+            -f baseband_guard=true \
+            -f fengchi=true \
+            -f bore_enable=true \
+            -f zram_writeback=true \
+            -f cpu_opt=true \
+            -f f2fs_opt=true \
+            -f wireguard=true \
+            -f netfilter_full=true \
+            -f lrng_enable=true \
+            -f wakelock_blocker=true \
+            -f github_release=true \
+            -f ntsync_enable=true \
             -f droidspaces_enable=false \
-            -f github_release=true
+            -f ip_set_enable=true \
+            -f ttl_enable=true \
+            -f mem_opt_patches=true \
+            -f lto_type=thin
           sleep 10
           gh run list --repo "$GITHUB_REPOSITORY" --workflow "10 Kernel selinux_hide adbroot" \
             --limit 3 --json databaseId,status,createdAt,headBranch

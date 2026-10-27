@@ -39,12 +39,12 @@ on:
         description: 'Install LZ4KD Patch (ZRAM optimization)'
         required: true
         type: boolean
-        default: false
+        default: true
       bbr_enable:
         description: "Enable TCP BBR/Brutal (false=off, true=add, default=set as default)"
         required: true
         type: choice
-        default: 'true'
+        default: true
         options:
           - 'false'
           - 'true'
@@ -58,7 +58,7 @@ on:
         description: 'Enable Re-Kernel Support (Enhances app freezing via NoActive/Freezer)'
         required: true
         type: boolean
-        default: false
+        default: true
       baseband_guard:
         description: 'Enable Baseband Guard (Anti-brick modem protection)'
         required: true
@@ -82,12 +82,12 @@ on:
         description: 'Enable BORE Scheduler (Burst-Oriented Response Enhancer, off by default)'
         required: true
         type: boolean
-        default: false
+        default: true
       zram_writeback:
         description: 'Enable ZRAM Writeback (better memory management)'
         required: true
         type: boolean
-        default: false
+        default: true
       cpu_opt:
         description: 'CPU Optimizations (Oryon MCPU tuning for SM8750)'
         required: true
@@ -97,7 +97,7 @@ on:
         description: 'F2FS Optimizations (better flash storage performance)'
         required: true
         type: boolean
-        default: false
+        default: true
       wireguard:
         description: 'Enable WireGuard VPN support'
         required: true
@@ -107,12 +107,12 @@ on:
         description: 'Full Netfilter (conntrack, NAT, hashlimit)'
         required: true
         type: boolean
-        default: false
+        default: true
       lrng_enable:
         description: 'Enable LRNG v60 (better entropy for crypto/gaming)'
         required: true
         type: boolean
-        default: false
+        default: true
       wakelock_blocker:
         description: 'Enable Wakelock Blocker (better idle battery drain)'
         required: true
@@ -127,7 +127,7 @@ on:
         description: 'Enable NTSync (low-latency NT sync primitives, great for gaming/Wine)'
         required: true
         type: boolean
-        default: false
+        default: true
       droidspaces_enable:
         description: 'Enable Droidspaces (SYSVIPC + PID_NS + POSIX_MQUEUE for proot-distro)'
         required: true
@@ -137,12 +137,12 @@ on:
         description: 'Enable IP_SET + IPv6 NAT (advanced firewall + IPv6 masquerade)'
         required: true
         type: boolean
-        default: false
+        default: true
       ttl_enable:
         description: 'Enable TTL/HL Target (hide tethering from carrier detection)'
         required: true
         type: boolean
-        default: false
+        default: true
       mem_opt_patches:
         description: 'Enable memory/scheduler optimization patches (from WildKernels)'
         required: true
