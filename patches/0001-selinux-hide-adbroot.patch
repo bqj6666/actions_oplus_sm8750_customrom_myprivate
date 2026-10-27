@@ -1,8 +1,8 @@
 diff --git a/kernel/feature/selinux_hide.c b/kernel/feature/selinux_hide.c
-index 91b54ef..a705a5b 100644
+index 91b54ef..b8d1ca2 100644
 --- a/kernel/feature/selinux_hide.c
 +++ b/kernel/feature/selinux_hide.c
-@@ -238,6 +238,23 @@ static inline u32 current_sid(void)
+@@ -238,6 +238,30 @@ static inline u32 current_sid(void)
  }
  #endif
  
@@ -15,18 +15,25 @@ index 91b54ef..a705a5b 100644
 +static inline bool ksu_hide_adbroot_query(const char *s, size_t n)
 +{
 +    static const char needle[] = "adbroot";
++    const size_t need = sizeof(needle) - 1;
++    size_t i;
 +
-+    if (!s || n < sizeof(needle) - 1)
++    if (!s || n < need)
 +        return false;
 +    if (ksu_get_uid_t(current_uid()) < 10000)
 +        return false;
-+    return memmem(s, n, needle, sizeof(needle) - 1) != NULL;
++    /* memmem() is not available in this kernel, match by hand. */
++    for (i = 0; i + need <= n; i++) {
++        if (!memcmp(s + i, needle, need))
++            return true;
++    }
++    return false;
 +}
 +
  __maybe_static ssize_t my_write_context(struct file *file, char *buf, size_t size)
  {
  #ifndef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE
-@@ -250,6 +267,9 @@ __maybe_static ssize_t my_write_context(struct file *file, char *buf, size_t siz
+@@ -250,6 +274,9 @@ __maybe_static ssize_t my_write_context(struct file *file, char *buf, size_t siz
      u32 sid, len;
      ssize_t length;
  
@@ -36,7 +43,7 @@ index 91b54ef..a705a5b 100644
      length =
          ksu_avc_has_perm_compat(current_sid(), SECINITSID_SECURITY, SECCLASS_SECURITY, SECURITY__CHECK_CONTEXT, NULL);
      if (length)
-@@ -339,6 +359,9 @@ __maybe_static ssize_t my_write_access(struct file *file, char *buf, size_t size
+@@ -339,6 +366,9 @@ __maybe_static ssize_t my_write_access(struct file *file, char *buf, size_t size
      sconlen = strlen(scon);
      tconlen = strlen(tcon);
  
@@ -46,7 +53,7 @@ index 91b54ef..a705a5b 100644
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0) || defined(KSU_COMPAT_HAS_SELINUX_POLICY_STRUCT)
      length =
          security_context_to_sid_with_policy(backup_sepolicy, scon, sconlen, &ssid, SECSID_NULL, GFP_KERNEL, NULL, NULL);
-@@ -478,6 +501,9 @@ int __nocfi ksu_handle_selinux_setprocattr(struct task_struct *p, char *name, vo
+@@ -478,6 +508,9 @@ int __nocfi ksu_handle_selinux_setprocattr(struct task_struct *p, char *name, vo
      int error, error2;
      char *str = value;
  
