@@ -471,7 +471,67 @@ jobs:
       - name: 🩹 Apply adbroot filter (selinux_hide)
         run: |
           cd kernel_workspace
-          patch -p1 --forward -d KernelSU < "$GITHUB_WORKSPACE/patches/0001-selinux-hide-adbroot.patch"
+          cat > /tmp/0001-selinux-hide-adbroot.patch <<'PATCH_EOF'
+diff --git a/kernel/feature/selinux_hide.c b/kernel/feature/selinux_hide.c
+index 91b54ef..a705a5b 100644
+--- a/kernel/feature/selinux_hide.c
++++ b/kernel/feature/selinux_hide.c
+@@ -238,6 +238,23 @@ static inline u32 current_sid(void)
+ }
+ #endif
+ 
++
++/* ODM policy ships an "adbroot" domain that root detectors treat as privileged
++ * evidence (adbroot / adbroot_service / adbroot_data_file / adbroot_exec).
++ * For app UIDs, answer as if the domain did not exist, i.e. -EINVAL, matching
++ * clean-policy behaviour. Root and system UIDs are untouched.
++ */
++static inline bool ksu_hide_adbroot_query(const char *s, size_t n)
++{
++    static const char needle[] = "adbroot";
++
++    if (!s || n < sizeof(needle) - 1)
++        return false;
++    if (ksu_get_uid_t(current_uid()) < 10000)
++        return false;
++    return memmem(s, n, needle, sizeof(needle) - 1) != NULL;
++}
++
+ __maybe_static ssize_t my_write_context(struct file *file, char *buf, size_t size)
+ {
+ #ifndef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE
+@@ -250,6 +267,9 @@ __maybe_static ssize_t my_write_context(struct file *file, char *buf, size_t siz
+     u32 sid, len;
+     ssize_t length;
+ 
++    if (ksu_hide_adbroot_query(buf, size))
++        return -EINVAL;
++
+     length =
+         ksu_avc_has_perm_compat(current_sid(), SECINITSID_SECURITY, SECCLASS_SECURITY, SECURITY__CHECK_CONTEXT, NULL);
+     if (length)
+@@ -339,6 +359,9 @@ __maybe_static ssize_t my_write_access(struct file *file, char *buf, size_t size
+     sconlen = strlen(scon);
+     tconlen = strlen(tcon);
+ 
++    if (ksu_hide_adbroot_query(tcon, tconlen))
++        return -EINVAL;
++
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0) || defined(KSU_COMPAT_HAS_SELINUX_POLICY_STRUCT)
+     length =
+         security_context_to_sid_with_policy(backup_sepolicy, scon, sconlen, &ssid, SECSID_NULL, GFP_KERNEL, NULL, NULL);
+@@ -478,6 +501,9 @@ int __nocfi ksu_handle_selinux_setprocattr(struct task_struct *p, char *name, vo
+     int error, error2;
+     char *str = value;
+ 
++    if (ksu_hide_adbroot_query(value, size))
++        return -EINVAL;
++
+     error = ksu_avc_has_perm_compat(mysid, mysid, SECCLASS_PROCESS, PROCESS__SETCURRENT, NULL);
+     if (error)
+         return error;
+PATCH_EOF
+          patch -p1 --forward -d KernelSU < /tmp/0001-selinux-hide-adbroot.patch
           echo "--- patched hunks ---"
           grep -n "ksu_hide_adbroot_query" KernelSU/kernel/feature/selinux_hide.c
 
