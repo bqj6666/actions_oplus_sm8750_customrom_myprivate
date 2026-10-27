@@ -1,5 +1,5 @@
 diff --git a/kernel/feature/selinux_hide.c b/kernel/feature/selinux_hide.c
-index 91b54ef..b8d1ca2 100644
+index 91b54ef..4ddc31e 100644
 --- a/kernel/feature/selinux_hide.c
 +++ b/kernel/feature/selinux_hide.c
 @@ -238,6 +238,30 @@ static inline u32 current_sid(void)
@@ -22,7 +22,7 @@ index 91b54ef..b8d1ca2 100644
 +        return false;
 +    if (ksu_get_uid_t(current_uid()) < 10000)
 +        return false;
-+    /* memmem() is not available in this kernel, match by hand. */
++    /* no substring helper in this kernel tree, match by hand */
 +    for (i = 0; i + need <= n; i++) {
 +        if (!memcmp(s + i, needle, need))
 +            return true;
