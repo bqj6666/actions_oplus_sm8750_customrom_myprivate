@@ -14,9 +14,6 @@ env:
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - '.github/workflows/10-kernel-hide.yml'
     inputs:
       ksu_type:
         description: 'KernelSU variant'

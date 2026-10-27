@@ -1,0 +1,30 @@
+name: 11 Trigger kernel hide build
+
+# 用 GITHUB_TOKEN 以 workflow_dispatch 方式触发 10 号构建，
+# 这样 inputs 才有默认值（push 事件下 inputs 为空，会让 Setup BakaSU 被跳过）。
+
+on:
+  push:
+    paths:
+      - '.github/workflows/10-kernel-hide.yml'
+      - '.github/workflows/11-trigger-hide.yml'
+      - 'patches/**'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch 10-kernel-hide
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run "10 Kernel selinux_hide adbroot" \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "${GITHUB_REF_NAME}"
+          sleep 10
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow "10 Kernel selinux_hide adbroot" \
+            --limit 3 --json databaseId,status,createdAt,headBranch
