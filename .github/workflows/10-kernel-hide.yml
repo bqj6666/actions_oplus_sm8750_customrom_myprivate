@@ -132,7 +132,7 @@ on:
         description: 'Enable Droidspaces (SYSVIPC + PID_NS + POSIX_MQUEUE for proot-distro)'
         required: true
         type: boolean
-        default: false
+        default: true
       ip_set_enable:
         description: 'Enable IP_SET + IPv6 NAT (advanced firewall + IPv6 masquerade)'
         required: true
@@ -157,7 +157,7 @@ jobs:
       ak3name: ${{ steps.create_zip.outputs.ak3name }}
     permissions:
       actions: write
-      contents: read
+      contents: write
     steps:
       - name: 🧠 Add swap space (for LTO link)
         run: |

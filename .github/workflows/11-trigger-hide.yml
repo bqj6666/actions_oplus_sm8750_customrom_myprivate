@@ -43,7 +43,7 @@ jobs:
             -f wakelock_blocker=true \
             -f github_release=true \
             -f ntsync_enable=true \
-            -f droidspaces_enable=false \
+            -f droidspaces_enable=true \
             -f ip_set_enable=true \
             -f ttl_enable=true \
             -f mem_opt_patches=true \
