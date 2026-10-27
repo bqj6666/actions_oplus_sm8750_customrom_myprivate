@@ -24,7 +24,11 @@ jobs:
         run: |
           gh workflow run "10 Kernel selinux_hide adbroot" \
             --repo "$GITHUB_REPOSITORY" \
-            --ref "${GITHUB_REF_NAME}"
+            --ref "${GITHUB_REF_NAME}" \
+            -f ksu_type=BakaSU \
+            -f SUSFS=true \
+            -f droidspaces_enable=false \
+            -f github_release=true
           sleep 10
           gh run list --repo "$GITHUB_REPOSITORY" --workflow "10 Kernel selinux_hide adbroot" \
             --limit 3 --json databaseId,status,createdAt,headBranch

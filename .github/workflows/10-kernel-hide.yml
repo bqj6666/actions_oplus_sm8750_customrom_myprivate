@@ -132,7 +132,7 @@ on:
         description: 'Enable Droidspaces (SYSVIPC + PID_NS + POSIX_MQUEUE for proot-distro)'
         required: true
         type: boolean
-        default: true
+        default: false
       ip_set_enable:
         description: 'Enable IP_SET + IPv6 NAT (advanced firewall + IPv6 masquerade)'
         required: true
