@@ -977,6 +977,32 @@ jobs:
           ccache -s
           df -h
 
+      - name: 🧾 Publish build log on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          mkdir -p /tmp/dbg
+          gzip -c /tmp/kbuild.log > /tmp/dbg/kbuild.log.gz 2>/dev/null || true
+          cp "$GITHUB_WORKSPACE/kout/.config" /tmp/dbg/config.txt 2>/dev/null || true
+          grep -nE "error:|Error [0-9]|undefined reference|No rule to make|recipe for target" /tmp/kbuild.log 2>/dev/null | tail -60 > /tmp/dbg/errors.txt || true
+          ls -lh /tmp/dbg
+          RURL="https://github.com/${GITHUB_REPOSITORY}.git"
+          CH='!gh auth git-credential'
+          rm -rf /tmp/logrepo
+          if ! git -c credential.helper="$CH" clone -q --depth=1 --branch ci/logs "$RURL" /tmp/logrepo 2>/dev/null; then
+            mkdir -p /tmp/logrepo && cd /tmp/logrepo && git init -q && git checkout -q -b ci/logs
+            git remote add origin "$RURL"
+          fi
+          cd /tmp/logrepo
+          mkdir -p "runs/${GITHUB_RUN_ID}"
+          cp -r /tmp/dbg/. "runs/${GITHUB_RUN_ID}/"
+          git add -A
+          git -c user.name=bqj6666 -c user.email=bqj6666@users.noreply.github.com \
+              commit -q -m "ci: build failure log ${GITHUB_RUN_ID}" || true
+          git -c credential.helper="$CH" push -q origin ci/logs
+
       - name: 📦 Save New CCache
         if: success()
         uses: actions/cache/save@v4
