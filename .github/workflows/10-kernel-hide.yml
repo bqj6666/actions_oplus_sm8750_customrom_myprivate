@@ -487,9 +487,11 @@ jobs:
           sed -i 's#a/kernel/feature/selinux_hide.c#a/drivers/kernelsu/feature/selinux_hide.c#g; s#b/kernel/feature/selinux_hide.c#b/drivers/kernelsu/feature/selinux_hide.c#g' /tmp/adbroot.patch
           patch -p1 --forward < /tmp/adbroot.patch
           echo "--- all selinux_hide.c copies ---"
-          find "$PWD" -name 'selinux_hide.c' 2>/dev/null | while read -r f; do
+          find /home/runner/work -name 'selinux_hide.c' 2>/dev/null | while read -r f; do
             echo "$f bytes=$(stat -c%s "$f") dbg=$(grep -c 'zy_sel:' "$f" 2>/dev/null || echo 0)"
           done
+          find /home/runner/work -name 'selinux_hide.c' 2>/dev/null > /tmp/diag.txt 2>&1 || true
+          grep -c 'zy_sel:' drivers/kernelsu/feature/selinux_hide.c >> /tmp/diag.txt 2>&1 || true
           echo "--- patched hunks ---"
           grep -n "ksu_hide_adbroot_query" drivers/kernelsu/feature/selinux_hide.c
           grep -c "zy_sel:" drivers/kernelsu/feature/selinux_hide.c
@@ -1020,6 +1022,7 @@ jobs:
         run: |
           set -e
           mkdir -p /tmp/dbg
+          cp /tmp/diag.txt /tmp/dbg/ 2>/dev/null || true
           gzip -c /tmp/kbuild.log > /tmp/dbg/kbuild.log.gz 2>/dev/null || true
           cp "$GITHUB_WORKSPACE/kout/.config" /tmp/dbg/config.txt 2>/dev/null || true
           grep -nE "error:|Error [0-9]|undefined reference|No rule to make|recipe for target" /tmp/kbuild.log 2>/dev/null | tail -60 > /tmp/dbg/errors.txt || true
