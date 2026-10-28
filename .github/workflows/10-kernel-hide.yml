@@ -107,7 +107,7 @@ on:
         description: 'Full Netfilter (conntrack, NAT, hashlimit)'
         required: true
         type: boolean
-        default: true
+        default: false
       lrng_enable:
         description: 'Enable LRNG v60 (better entropy for crypto/gaming)'
         required: true
@@ -331,6 +331,9 @@ jobs:
           # shallow history makes rev-list --count return 1 (KSUVER 30701);
           # unshallow so the count matches upstream: 4505 + 30700 = 35205
           git fetch -q --unshallow origin || true
+          # reference build shows "ReSukiSU will check EVERY hooks" in its config;
+          # keep the Kconfig comment wording identical so the diff is only our patch
+          sed -i 's/BakaSU will check EVERY hooks/ReSukiSU will check EVERY hooks/' kernel/Kconfig
           KSU_VERSION_COUNT=$(git rev-list --count HEAD)
           export KSUVER=$(expr $KSU_VERSION_COUNT + 30700)
           echo "KSUVER=$KSUVER" >> $GITHUB_ENV

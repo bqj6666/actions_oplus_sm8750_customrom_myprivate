@@ -38,7 +38,7 @@ jobs:
             -f cpu_opt=true \
             -f f2fs_opt=true \
             -f wireguard=true \
-            -f netfilter_full=true \
+            -f netfilter_full=false \
             -f lrng_enable=true \
             -f wakelock_blocker=true \
             -f github_release=true \
