@@ -890,14 +890,6 @@ jobs:
           fi
           echo "::endgroup::"
 
-      - name: 🔒 Match reference netfilter config
-        working-directory: kernel_workspace/common
-        run: |
-          # leading newline: the file may end without one, which would glue our first line to the last
-          printf '\n# CONFIG_NF_CONNTRACK_ZONES is not set\n# CONFIG_NF_CONNTRACK_TIMESTAMP is not set\n# CONFIG_NF_CONNTRACK_LABELS is not set\n# CONFIG_NF_CONNTRACK_TIMEOUT is not set\n' >> arch/arm64/configs/gki_defconfig
-          tail -8 arch/arm64/configs/gki_defconfig
-          wc -l arch/arm64/configs/gki_defconfig
-
       - name: Configure LTO
         run: |
           cd kernel_workspace

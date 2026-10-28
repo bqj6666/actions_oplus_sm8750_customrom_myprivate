@@ -1,6 +1,0 @@
-id=zy_selinux_adbroot
-name=SELinux adbroot filter (userspace)
-version=v0.1
-versionCode=1
-author=bqj6666
-description=Zygisk 模块：对 app UID 隐藏 ODM 自带的 adbroot SELinux 域（查询返回拒绝、setcon 返回 EINVAL）。不修改内核、不修改策略文件。
