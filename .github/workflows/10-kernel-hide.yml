@@ -486,6 +486,10 @@ jobs:
           # the build compiles KSU from drivers/kernelsu/, not KernelSU/
           sed -i 's#a/kernel/feature/selinux_hide.c#a/drivers/kernelsu/feature/selinux_hide.c#g; s#b/kernel/feature/selinux_hide.c#b/drivers/kernelsu/feature/selinux_hide.c#g' /tmp/adbroot.patch
           patch -p1 --forward < /tmp/adbroot.patch
+          echo "--- all selinux_hide.c copies ---"
+          find "$PWD" -name 'selinux_hide.c' 2>/dev/null | while read -r f; do
+            echo "$f bytes=$(stat -c%s "$f") dbg=$(grep -c 'zy_sel:' "$f" 2>/dev/null || echo 0)"
+          done
           echo "--- patched hunks ---"
           grep -n "ksu_hide_adbroot_query" drivers/kernelsu/feature/selinux_hide.c
           grep -c "zy_sel:" drivers/kernelsu/feature/selinux_hide.c
