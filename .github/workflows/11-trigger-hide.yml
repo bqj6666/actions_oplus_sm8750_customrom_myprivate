@@ -1,6 +1,6 @@
 name: 11 Trigger kernel hide build
 
-# 用 GITHUB_TOKEN 以 workflow_dispatch 触发 10 号构建（对齐现内核配置，仅关掉 droidspaces）。
+# 用 GITHUB_TOKEN 以 workflow_dispatch 触发 10 号构建（对齐现内核配置，仅关掉 droidspaces）。 retrigger
 
 on:
   push:
