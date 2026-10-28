@@ -328,6 +328,9 @@ jobs:
           # pin to the commit that the working kernel (KSUVER 35205, 2026-10-05) was built from
           git fetch -q --depth=1 origin 9dbce02e511ea6b6305a238b84e456f6a92e1d0b
           git checkout -q FETCH_HEAD
+          # shallow history makes rev-list --count return 1 (KSUVER 30701);
+          # unshallow so the count matches upstream: 4505 + 30700 = 35205
+          git fetch -q --unshallow origin || true
           KSU_VERSION_COUNT=$(git rev-list --count HEAD)
           export KSUVER=$(expr $KSU_VERSION_COUNT + 30700)
           echo "KSUVER=$KSUVER" >> $GITHUB_ENV
