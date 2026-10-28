@@ -39,8 +39,10 @@ jobs:
       - name: "Toolchain clang r563880c"
         run: |
           mkdir -p tc && cd tc
-          aria2c -x8 -s8 -q -o clang.tar.gz "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz"
+          curl -fL --retry 5 --retry-delay 3 -o clang.tar.gz "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz"
+          ls -lh clang.tar.gz
           mkdir -p clang && tar -C clang -zxf clang.tar.gz
+          ./clang/bin/clang --version | head -1
           git clone -q --depth=1 -b ks-kernel.lnx.4.0.r1-rel https://git.codelinaro.org/clo/la/kernel/prebuilts/build-tools.git build-tools
           ls clang/bin/clang build-tools/linux-x86/bin/make
 
