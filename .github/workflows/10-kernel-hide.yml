@@ -301,6 +301,8 @@ jobs:
       - name: Init and Config CCache
         run: |
           export CCACHE_DIR="${{ env.CCACHE_DIR }}"
+          # ccache has been returning objects that predate our source edits; bypass it
+          export CCACHE_DISABLE=1
           mkdir -p "$CCACHE_DIR"
 
           ccache -M "${{ env.CCACHE_MAXSIZE }}"
