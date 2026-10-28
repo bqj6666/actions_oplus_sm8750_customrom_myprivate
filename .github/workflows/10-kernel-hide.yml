@@ -1000,7 +1000,11 @@ jobs:
             KCFLAGS="-O2 -pipe -Wno-error -Wno-implicit-function-declaration -Wno-implicit-int -Wno-default-const-init-var-unsafe -Wno-format -Wno-unknown-warning-option ${EXTRA_CFLAGS:-} ${MAP}" \
             Image 2>&1 | tee -a /tmp/kbuild.log
 
-          if ! strings "$GITHUB_WORKSPACE/kout/arch/arm64/boot/Image" | grep -q 'zy_sel'; then
+          # NOTE: with `set -o pipefail`, `strings | grep -q` reports failure because grep exits
+          # early and strings dies of SIGPIPE. Count instead, which consumes all input.
+          DBG_HITS=$(strings "$GITHUB_WORKSPACE/kout/arch/arm64/boot/Image" | grep -c 'zy_sel' || true)
+          echo "zy_sel hits in Image: ${DBG_HITS}"
+          if [ "${DBG_HITS:-0}" -eq 0 ]; then
             echo "ERROR: adbroot filter not present in the built Image"
             exit 1
           fi
