@@ -899,6 +899,17 @@ jobs:
           fi
           echo "::endgroup::"
 
+      - name: 🔒 Match reference netfilter config
+        working-directory: kernel_workspace/common
+        run: |
+          cat >> arch/arm64/configs/gki_defconfig <<'EOF'
+          # CONFIG_NF_CONNTRACK_ZONES is not set
+          # CONFIG_NF_CONNTRACK_TIMESTAMP is not set
+          # CONFIG_NF_CONNTRACK_LABELS is not set
+          # CONFIG_NF_CONNTRACK_TIMEOUT is not set
+          EOF
+          tail -6 arch/arm64/configs/gki_defconfig
+
       - name: Configure LTO
         run: |
           cd kernel_workspace
@@ -959,6 +970,8 @@ jobs:
           cd kernel_workspace/common
           set -o pipefail
           : > /tmp/kbuild.log
+          # reference build shows 'ReSukiSU will check EVERY hooks'; rewrite right before kconfig runs
+          sed -i 's/BakaSU will check EVERY hooks/ReSukiSU will check EVERY hooks/' KernelSU/kernel/Kconfig || true
 
           echo '#!/bin/bash' > ld-wrapper
           echo 'ld.lld "$@" --thinlto-cache-dir=$LDCACHE_DIR --thinlto-jobs=$(($(nproc --all) / 2))' >> ld-wrapper
