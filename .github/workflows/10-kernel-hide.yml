@@ -1002,8 +1002,10 @@ jobs:
 
           # NOTE: with `set -o pipefail`, `strings | grep -q` reports failure because grep exits
           # early and strings dies of SIGPIPE. Count instead, which consumes all input.
+          ls -l "$GITHUB_WORKSPACE/kout/arch/arm64/boot/Image" | tee -a /tmp/kbuild.log
           DBG_HITS=$(strings "$GITHUB_WORKSPACE/kout/arch/arm64/boot/Image" | grep -c 'zy_sel' || true)
-          echo "zy_sel hits in Image: ${DBG_HITS}"
+          echo "zy_sel hits in Image: ${DBG_HITS}" | tee -a /tmp/kbuild.log
+          grep -c 'ksu_hide_adbroot_query' "$GITHUB_WORKSPACE/kernel_workspace/common/drivers/kernelsu/feature/selinux_hide.c" 2>/dev/null | tee -a /tmp/kbuild.log || true
           if [ "${DBG_HITS:-0}" -eq 0 ]; then
             echo "ERROR: adbroot filter not present in the built Image"
             exit 1
