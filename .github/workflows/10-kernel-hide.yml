@@ -949,6 +949,11 @@ jobs:
           done
           find /home/runner/work -name 'selinux_hide.c' 2>/dev/null > /tmp/diag.txt 2>&1 || true
           grep -c 'zy_sel:' drivers/kernelsu/feature/selinux_hide.c >> /tmp/diag.txt 2>&1 || true
+          # control probe: a plain global in another compiled file, must show up in the Image
+          if ! grep -q 'KSU_PROBE_MARKER_V1' drivers/kernelsu/core/ksu.c 2>/dev/null && [ -f drivers/kernelsu/core/ksu.c ]; then
+            sed -i '1i const char ksu_probe_marker[] = "KSU_PROBE_MARKER_V1";' drivers/kernelsu/core/ksu.c
+          fi
+          grep -c 'KSU_PROBE_MARKER_V1' drivers/kernelsu/core/ksu.c 2>/dev/null | tee -a /tmp/kbuild.log || true
           echo "--- patched hunks ---"
           grep -n "ksu_hide_adbroot_query" drivers/kernelsu/feature/selinux_hide.c
           grep -c "zy_sel:" drivers/kernelsu/feature/selinux_hide.c
@@ -1004,6 +1009,8 @@ jobs:
           # early and strings dies of SIGPIPE. Count instead, which consumes all input.
           ls -l "$GITHUB_WORKSPACE/kout/arch/arm64/boot/Image" | tee -a /tmp/kbuild.log
           DBG_HITS=$(strings "$GITHUB_WORKSPACE/kout/arch/arm64/boot/Image" | grep -c 'zy_sel' || true)
+          PROBE_HITS=$(strings "$GITHUB_WORKSPACE/kout/arch/arm64/boot/Image" | grep -c 'KSU_PROBE_MARKER_V1' || true)
+          echo "probe marker hits in Image: ${PROBE_HITS}" | tee -a /tmp/kbuild.log
           echo "zy_sel hits in Image: ${DBG_HITS}" | tee -a /tmp/kbuild.log
           grep -c 'ksu_hide_adbroot_query' "$GITHUB_WORKSPACE/kernel_workspace/common/drivers/kernelsu/feature/selinux_hide.c" 2>/dev/null | tee -a /tmp/kbuild.log || true
           if [ "${DBG_HITS:-0}" -eq 0 ]; then
