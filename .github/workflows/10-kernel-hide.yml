@@ -902,13 +902,10 @@ jobs:
       - name: 🔒 Match reference netfilter config
         working-directory: kernel_workspace/common
         run: |
-          cat >> arch/arm64/configs/gki_defconfig <<'EOF'
-          # CONFIG_NF_CONNTRACK_ZONES is not set
-          # CONFIG_NF_CONNTRACK_TIMESTAMP is not set
-          # CONFIG_NF_CONNTRACK_LABELS is not set
-          # CONFIG_NF_CONNTRACK_TIMEOUT is not set
-          EOF
-          tail -6 arch/arm64/configs/gki_defconfig
+          # leading newline: the file may end without one, which would glue our first line to the last
+          printf '\n# CONFIG_NF_CONNTRACK_ZONES is not set\n# CONFIG_NF_CONNTRACK_TIMESTAMP is not set\n# CONFIG_NF_CONNTRACK_LABELS is not set\n# CONFIG_NF_CONNTRACK_TIMEOUT is not set\n' >> arch/arm64/configs/gki_defconfig
+          tail -8 arch/arm64/configs/gki_defconfig
+          wc -l arch/arm64/configs/gki_defconfig
 
       - name: Configure LTO
         run: |
@@ -997,6 +994,9 @@ jobs:
             KCFLAGS="-O2 -pipe -Wno-error -Wno-implicit-function-declaration -Wno-implicit-int -Wno-default-const-init-var-unsafe -Wno-format -Wno-unknown-warning-option ${EXTRA_CFLAGS:-} ${MAP}" \
             Image 2>&1 | tee -a /tmp/kbuild.log
 
+          echo "--- config diagnostics ---"
+          grep -E 'NF_CONNTRACK_(ZONES|TIMESTAMP|LABELS|TIMEOUT)=' "$GITHUB_WORKSPACE/kout/.config" || true
+          grep -m1 'will check EVERY hooks' "$GITHUB_WORKSPACE/kout/.config" || true
           echo "Kernel Compilation Complete!"
           ccache -c
           ccache --evict-older-than 10800s
