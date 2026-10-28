@@ -1,65 +1,66 @@
 diff --git a/kernel/feature/selinux_hide.c b/kernel/feature/selinux_hide.c
-index 91b54ef..4ddc31e 100644
+index a57ed01..4b436f4 100644
 --- a/kernel/feature/selinux_hide.c
 +++ b/kernel/feature/selinux_hide.c
-@@ -238,6 +238,30 @@ static inline u32 current_sid(void)
- }
- #endif
+@@ -135,6 +135,32 @@ static void ksu_security_compute_av_user(u32 ssid, u32 tsid, u16 tclass, struct
+ static write_op_fn *context_write, *access_write;
+ static write_op_fn orig_context_write, orig_access_write;
  
-+
-+/* ODM policy ships an "adbroot" domain that root detectors treat as privileged
-+ * evidence (adbroot / adbroot_service / adbroot_data_file / adbroot_exec).
-+ * For app UIDs, answer as if the domain did not exist, i.e. -EINVAL, matching
-+ * clean-policy behaviour. Root and system UIDs are untouched.
++/*
++ * ODM policy ships an "adbroot" domain that root detectors treat as privileged
++ * evidence. For app UIDs answer as if the domain did not exist (-EINVAL).
++ * Root and system UIDs are untouched.
 + */
 +static inline bool ksu_hide_adbroot_query(const char *s, size_t n)
 +{
 +    static const char needle[] = "adbroot";
 +    const size_t need = sizeof(needle) - 1;
-+    size_t i;
++    size_t i, k;
 +
 +    if (!s || n < need)
 +        return false;
 +    if (ksu_get_uid_t(current_uid()) < 10000)
 +        return false;
-+    /* no substring helper in this kernel tree, match by hand */
 +    for (i = 0; i + need <= n; i++) {
-+        if (!memcmp(s + i, needle, need))
++        for (k = 0; k < need; k++) {
++            if (s[i + k] != needle[k])
++                break;
++        }
++        if (k == need)
 +            return true;
 +    }
 +    return false;
 +}
 +
- __maybe_static ssize_t my_write_context(struct file *file, char *buf, size_t size)
+ static ssize_t my_write_context(struct file *file, char *buf, size_t size)
  {
- #ifndef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE
-@@ -250,6 +274,9 @@ __maybe_static ssize_t my_write_context(struct file *file, char *buf, size_t siz
+     // apply to all app uids
+@@ -145,6 +171,9 @@ static ssize_t my_write_context(struct file *file, char *buf, size_t size)
      u32 sid, len;
      ssize_t length;
  
 +    if (ksu_hide_adbroot_query(buf, size))
 +        return -EINVAL;
 +
-     length =
-         ksu_avc_has_perm_compat(current_sid(), SECINITSID_SECURITY, SECCLASS_SECURITY, SECURITY__CHECK_CONTEXT, NULL);
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+     length = avc_has_perm(current_sid(), SECINITSID_SECURITY, SECCLASS_SECURITY, SECURITY__CHECK_CONTEXT, NULL);
      if (length)
-@@ -339,6 +366,9 @@ __maybe_static ssize_t my_write_access(struct file *file, char *buf, size_t size
-     sconlen = strlen(scon);
-     tconlen = strlen(tcon);
+@@ -243,6 +272,9 @@ static ssize_t my_write_access(struct file *file, char *buf, size_t size)
+     if (sscanf(buf, "%s %s %hu", scon, tcon, &tclass) != 3)
+         goto out;
  
-+    if (ksu_hide_adbroot_query(tcon, tconlen))
-+        return -EINVAL;
++    if (ksu_hide_adbroot_query(tcon, strlen(tcon)))
++        goto out;
 +
- #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0) || defined(KSU_COMPAT_HAS_SELINUX_POLICY_STRUCT)
-     length =
-         security_context_to_sid_with_policy(backup_sepolicy, scon, sconlen, &ssid, SECSID_NULL, GFP_KERNEL, NULL, NULL);
-@@ -478,6 +508,9 @@ int __nocfi ksu_handle_selinux_setprocattr(struct task_struct *p, char *name, vo
-     int error, error2;
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+     length = security_context_to_sid_with_policy(backup_sepolicy, scon, strlen(scon), &ssid, SECSID_NULL, GFP_KERNEL);
+     if (length)
+@@ -307,6 +339,8 @@ int __nocfi ksu_handle_selinux_setprocattr(struct task_struct *p, char *name, vo
+     int error;
+     u32 mysid, sid;
      char *str = value;
- 
 +    if (ksu_hide_adbroot_query(value, size))
 +        return -EINVAL;
-+
-     error = ksu_avc_has_perm_compat(mysid, mysid, SECCLASS_PROCESS, PROCESS__SETCURRENT, NULL);
-     if (error)
-         return error;
+     if (likely(ksu_get_uid_t(current_uid()) < 10000)) {
+         goto call_orig;
+     }
