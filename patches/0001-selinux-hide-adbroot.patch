@@ -1,8 +1,8 @@
 diff --git a/kernel/feature/selinux_hide.c b/kernel/feature/selinux_hide.c
-index a57ed01..4b436f4 100644
+index a57ed013..4f7ac8d2 100644
 --- a/kernel/feature/selinux_hide.c
 +++ b/kernel/feature/selinux_hide.c
-@@ -135,6 +135,32 @@ static void ksu_security_compute_av_user(u32 ssid, u32 tsid, u16 tclass, struct
+@@ -135,6 +135,44 @@ static void ksu_security_compute_av_user(u32 ssid, u32 tsid, u16 tclass, struct
  static write_op_fn *context_write, *access_write;
  static write_op_fn orig_context_write, orig_access_write;
  
@@ -11,6 +11,18 @@ index a57ed01..4b436f4 100644
 + * evidence. For app UIDs answer as if the domain did not exist (-EINVAL).
 + * Root and system UIDs are untouched.
 + */
++static void ksu_adbroot_dbg_once(const char *where, const char *what)
++{
++    static bool logged_access, logged_setcon;
++    bool *flag = strcmp(where, "access") == 0 ? &logged_access : &logged_setcon;
++
++    if (*flag)
++        return;
++    *flag = true;
++    pr_info("zy_sel: %s entered, uid=%d, sample=%s\n", where,
++            ksu_get_uid_t(current_uid()), what ? what : "(null)");
++}
++
 +static inline bool ksu_hide_adbroot_query(const char *s, size_t n)
 +{
 +    static const char needle[] = "adbroot";
@@ -35,7 +47,7 @@ index a57ed01..4b436f4 100644
  static ssize_t my_write_context(struct file *file, char *buf, size_t size)
  {
      // apply to all app uids
-@@ -145,6 +171,9 @@ static ssize_t my_write_context(struct file *file, char *buf, size_t size)
+@@ -145,6 +183,9 @@ static ssize_t my_write_context(struct file *file, char *buf, size_t size)
      u32 sid, len;
      ssize_t length;
  
@@ -45,22 +57,28 @@ index a57ed01..4b436f4 100644
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
      length = avc_has_perm(current_sid(), SECINITSID_SECURITY, SECCLASS_SECURITY, SECURITY__CHECK_CONTEXT, NULL);
      if (length)
-@@ -243,6 +272,9 @@ static ssize_t my_write_access(struct file *file, char *buf, size_t size)
+@@ -243,6 +284,12 @@ static ssize_t my_write_access(struct file *file, char *buf, size_t size)
      if (sscanf(buf, "%s %s %hu", scon, tcon, &tclass) != 3)
          goto out;
  
-+    if (ksu_hide_adbroot_query(tcon, strlen(tcon)))
++    ksu_adbroot_dbg_once("access", tcon);
++    if (ksu_hide_adbroot_query(tcon, strlen(tcon))) {
++        pr_info("zy_sel: access hit adbroot, returning EINVAL\n");
 +        goto out;
++    }
 +
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
      length = security_context_to_sid_with_policy(backup_sepolicy, scon, strlen(scon), &ssid, SECSID_NULL, GFP_KERNEL);
      if (length)
-@@ -307,6 +339,8 @@ int __nocfi ksu_handle_selinux_setprocattr(struct task_struct *p, char *name, vo
+@@ -307,6 +354,11 @@ int __nocfi ksu_handle_selinux_setprocattr(struct task_struct *p, char *name, vo
      int error;
      u32 mysid, sid;
      char *str = value;
-+    if (ksu_hide_adbroot_query(value, size))
++    ksu_adbroot_dbg_once("setcon", (const char *)value);
++    if (ksu_hide_adbroot_query(value, size)) {
++        pr_info("zy_sel: setcon hit adbroot, returning EINVAL\n");
 +        return -EINVAL;
++    }
      if (likely(ksu_get_uid_t(current_uid()) < 10000)) {
          goto call_orig;
      }
