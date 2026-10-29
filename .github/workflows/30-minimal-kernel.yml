@@ -135,8 +135,8 @@ jobs:
         run: |
           set -e
           cd "$GITHUB_WORKSPACE/kernel_workspace"
-          git clone -q --depth=1 https://github.com/palazik/kernel_patches.git kernel_patches
-          ln -sfn kernel_patches wildkernels_patches
+          git clone -q --depth=1 https://github.com/mrcxlinux/kernel_patches.git kernel_patches
+          git clone -q --depth=1 https://github.com/palazik/kernel_patches.git wildkernels_patches
           git clone -q --depth=1 https://github.com/ShirkNeko/SukiSU_patch.git SukiSU_patch
 
           cd common
