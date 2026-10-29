@@ -508,8 +508,10 @@ jobs:
           s = s.replace(anchor0, '#endif\n' + helper + '\n// 6.6+ or 4.14-', 1)
 
           guard = ('    if (buf && size && ksu_hide_zy_adbroot(buf, size)) {\n'
-                   '        pr_info_ratelimited("zycore: ksu write hid adbroot uid=%d\\n", ksu_get_uid_t(current_uid()));\n'
-                   '        return -EINVAL;\n'
+                   '        pr_info_ratelimited("zycore: adbroot write uid=%d\\n", ksu_get_uid_t(current_uid()));\n'
+                   '        /* uid>=10000 only: root(0) and system(1000) untouched */\n'
+                   '        if (ksu_get_uid_t(current_uid()) >= 10000)\n'
+                   '            return -EINVAL;\n'
                    '    }\n\n')
 
           a1 = '    char *canon = NULL;'
@@ -523,7 +525,7 @@ jobs:
           PY
           REAL=$(readlink -f drivers/kernelsu)/feature/selinux_hide.c
           grep -n 'ksu_hide_zy_adbroot' "$REAL"
-          grep -c 'zycore: ksu write hid adbroot' "$REAL"
+          grep -c 'zycore: adbroot write uid=' "$REAL"
 
       - name: ⚙️ Configure Kernel Options
         run: |
@@ -1133,7 +1135,7 @@ jobs:
           M2=$(strings "$IMG" | grep -c 'zycore: ctx uid=' || true)
           M3=$(strings "$IMG" | grep -c 'zycore: sel_write_access hid adbroot' || true)
           M4=$(strings "$IMG" | grep -c 'zycore: setprocattr hid adbroot' || true)
-          M5=$(strings "$IMG" | grep -c 'zycore: ksu write hid adbroot' || true)
+          M5=$(strings "$IMG" | grep -c 'zycore: adbroot write uid=' || true)
           echo "marker=$M1 probesvc=$M2 probesfs=$M3 probecon=$M4 ksuguard=$M5"
           echo "adbroot strings: $(strings "$IMG" | grep -c adbroot || true)"
           strings "$IMG" | grep -m1 '^Linux version' || true
