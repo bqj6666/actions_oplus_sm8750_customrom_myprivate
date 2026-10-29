@@ -917,10 +917,56 @@ jobs:
           sed -i 's/${scm_version}//' ./common/scripts/setlocalversion
           echo "CONFIG_LOCALVERSION_AUTO=n" >> ./common/arch/arm64/configs/gki_defconfig
 
-      - name: 🩹 Apply adbroot core SELinux patch (ours only)
+      - name: 🩹 Apply adbroot core SELinux patch (text injection, no patch file)
         run: |
           cd kernel_workspace/common
-          patch -p1 --forward --no-backup-if-mismatch < "$GITHUB_WORKSPACE/patches/0002-selinux-adbroot-core.patch"
+          python3 - <<'PY'
+          import pathlib, sys
+
+          INC = '#include <linux/string.h>\n'
+
+          # ---- selinuxfs.c ----
+          p1 = pathlib.Path('security/selinux/selinuxfs.c')
+          s1 = p1.read_text()
+          assert 'ZYADBROOT_CORE_V1' not in s1, 'already patched (selinuxfs)'
+          assert s1.count(INC) == 1, 'include anchor count %d' % s1.count(INC)
+          s1 = s1.replace(
+              INC,
+              INC + '#include <linux/cred.h>\n\n'
+                    'const char zy_adbroot_marker[] __attribute__((used)) = "ZYADBROOT_CORE_V1";\n',
+              1)
+          anchor = '\tif (sscanf(buf, "%s %s %hu", scon, tcon, &tclass) != 3)\n\t\tgoto out;\n'
+          assert anchor in s1, 'sscanf anchor missing'
+          guard = (anchor +
+                   '\n\t/* hide the ODM adbroot domain from app UIDs */\n'
+                   '\tif (current_uid().val >= 10000 &&\n'
+                   '\t    (strstr(scon, "adbroot") || strstr(tcon, "adbroot"))) {\n'
+                   '\t\tlength = -EINVAL;\n'
+                   '\t\tgoto out;\n'
+                   '\t}\n')
+          s1 = s1.replace(anchor, guard, 1)
+          p1.write_text(s1)
+
+          # ---- hooks.c ----
+          p2 = pathlib.Path('security/selinux/hooks.c')
+          s2 = p2.read_text()
+          assert 'hide the ODM adbroot domain' not in s2, 'already patched (hooks)'
+          assert s2.count(INC) == 1, 'include anchor count %d' % s2.count(INC)
+          s2 = s2.replace(INC, INC + '#include <linux/cred.h>\n', 1)
+          sig = 'static int selinux_setprocattr(const char *name, void *value, size_t size)\n{\n'
+          body = '\tint error;\n\tchar *str = value;\n'
+          i = s2.index(sig)
+          j = s2.index(body, i)
+          k = j + len(body)
+          block = ('\n\t/* hide the ODM adbroot domain from app UIDs */\n'
+                   '\tif (current_uid().val >= 10000 && value && size &&\n'
+                   '\t    strnstr(value, "adbroot", size)) {\n'
+                   '\t\treturn -EINVAL;\n'
+                   '\t}\n')
+          s2 = s2[:k] + block + s2[k:]
+          p2.write_text(s2)
+          print('INJECT_OK')
+          PY
           grep -n 'ZYADBROOT_CORE_V1' security/selinux/selinuxfs.c
           grep -n 'hide the ODM adbroot domain' security/selinux/hooks.c security/selinux/selinuxfs.c
 
