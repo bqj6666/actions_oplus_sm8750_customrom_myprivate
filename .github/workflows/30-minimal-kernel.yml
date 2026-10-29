@@ -137,6 +137,10 @@ jobs:
           export O="$GITHUB_WORKSPACE/kernel_workspace/kout"
           REAL=$(readlink -f drivers/kernelsu)/feature/selinux_hide.c
           md5sum "$REAL" > /tmp/src_before.md5
+          # control probe in a core file: if this string is missing from the Image too,
+          # the build is not compiling this source tree at all
+          grep -q ZZPROBE765 init/main.c || sed -i '0,/^asmlinkage __visible void __init start_kernel(void)$/s//asmlinkage __visible void __init start_kernel(void)\n{\n\tpr_info("ZZPROBE765\\n");/' init/main.c
+          grep -n 'ZZPROBE765' init/main.c | head -2
           make -j$(nproc) LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$O olddefconfig
           make -j$(nproc) LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$O Image 2>&1 | tee /tmp/minbuild.log | tail -40
 
@@ -161,6 +165,7 @@ jobs:
           echo "real file: $REAL"
           grep -c 'zy_sel:' "$REAL" || true
           echo "KernelSU strings in Image: $(strings "$IMG" | grep -c 'KernelSU' || true)"
+          echo "core probe (ZZPROBE765) in Image: $(strings "$IMG" | grep -c 'ZZPROBE765' || true)"
           H=$(strings "$IMG" | grep -c 'zy_sel' || true)
           P=$(strings "$IMG" | grep -c 'KSU_PROBE_MARKER_V1' || true)
           echo "zy_sel hits: $H ; probe hits: $P"
