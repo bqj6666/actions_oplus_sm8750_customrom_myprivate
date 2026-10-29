@@ -31,19 +31,37 @@ jobs:
 
       - name: Free disk + deps
         run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache \
+                      /usr/lib/jvm /usr/share/swift /opt/az /usr/local/.ghcup || true
+          echo "== disk after cleanup"; df -h /
           sudo apt-get update -qq
           sudo apt-get install -y -qq libelf-dev bc bison flex libssl-dev python3 python-is-python3 zip unzip aria2
           df -h /
 
+      - name: Cache clang
+        uses: actions/cache@v4
+        with:
+          path: tc/clang
+          key: min-clang-r563880c
+
+      - name: Cache build-tools
+        uses: actions/cache@v4
+        with:
+          path: tc/build-tools
+          key: min-buildtools-ks-kernel
+
       - name: "Toolchain clang r563880c"
         run: |
           mkdir -p tc && cd tc
+          if [ -x clang/bin/clang ]; then echo "clang restored from cache"; else
           curl -fL --retry 5 --retry-delay 3 -o clang.tar.gz "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz"
           ls -lh clang.tar.gz
           mkdir -p clang && tar -C clang -zxf clang.tar.gz
           ./clang/bin/clang --version | head -1
+          fi
+          if [ -x build-tools/linux-x86/bin/make ]; then echo "build-tools restored"; else
           git clone -q --depth=1 -b ks-kernel.lnx.4.0.r1-rel https://git.codelinaro.org/clo/la/kernel/prebuilts/build-tools.git build-tools
+          fi
           ls clang/bin/clang build-tools/linux-x86/bin/make
 
       - name: Kernel source (pinned commit)
