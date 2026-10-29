@@ -953,7 +953,7 @@ jobs:
           assert 'zycore: sel_write_access hid adbroot' not in s1, 'selinuxfs already patched'
           if CRED not in s1:
               assert s1.count(INC) == 1, 'selinuxfs include anchor %d' % s1.count(INC)
-              s1 = s1.replace(INC, INC + CRED + '\n' + MARK, 1)
+              s1 = s1.replace(INC, INC + CRED + '\n', 1)   # marker lives only in services.c (no duplicate symbol)
           anchor = '\tif (sscanf(buf, "%s %s %hu", scon, tcon, &tclass) != 3)\n\t\tgoto out;\n'
           assert anchor in s1, 'sscanf anchor missing'
           s1 = s1.replace(anchor, anchor +
