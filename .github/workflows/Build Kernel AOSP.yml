@@ -1021,6 +1021,24 @@ jobs:
                           '\t\tlength = -EINVAL;\n'
                           '\t\tgoto out;\n'
                           '\t}\n', 1)
+          # ---- selinuxfs.c: 让用户态读到的 policy 副本里没有 adbroot 类型名 ----
+          anchor_read = ('\trc = security_read_policy(&plm->data, &plm->len);\n'
+                         '\tif (rc)\n'
+                         '\t\tgoto err;\n')
+          assert anchor_read in s1, 'security_read_policy anchor missing'
+          policy_strip = (anchor_read +
+                          '\n\t/* zycore: strip the adbroot type name from the user-visible policy copy */\n'
+                          '\t{\n'
+                          '\t\tchar *zp = (char *)plm->data;\n'
+                          '\t\tu32 zi;\n'
+                          '\t\tfor (zi = 0; zi + 7 <= plm->len; zi++) {\n'
+                          '\t\t\tif (zp[zi] == \'a\' && !memcmp(zp + zi, "adbroot", 7)) {\n'
+                          '\t\t\t\tmemcpy(zp + zi, "adbxxxxx", 7);\n'
+                          '\t\t\t\tzi += 6;\n'
+                          '\t\t\t}\n'
+                          '\t\t}\n'
+                          '\t}\n')
+          s1 = s1.replace(anchor_read, policy_strip, 1)
           p1.write_text(s1)
 
           # ---------------- hooks.c : setprocattr (setcon) channel
@@ -1131,7 +1149,8 @@ jobs:
           M3=$(strings "$IMG" | grep -c 'zycore: sel_write_access hid adbroot' || true)
           M4=$(strings "$IMG" | grep -c 'zycore: setprocattr hid adbroot' || true)
           M5=$(strings "$IMG" | grep -c 'zycore: adbroot write uid=' || true)
-          echo "marker=$M1 probesvc=$M2 probesfs=$M3 probecon=$M4 ksuguard=$M5"
+          M6=$(strings "$IMG" | grep -c 'adbxxxxx' || true)
+          echo "marker=$M1 probesvc=$M2 probesfs=$M3 probecon=$M4 ksuguard=$M5 polstrip=$M6"
           echo "adbroot strings: $(strings "$IMG" | grep -c adbroot || true)"
           strings "$IMG" | grep -m1 '^Linux version' || true
           [ "${M1:-0}" -gt 0 ] || { echo "ERROR: marker missing"; exit 1; }
