@@ -1,5 +1,5 @@
-name: OP13 Kernel AOSP Build
-run-name: ${{ inputs.ksu_type }} OP13 AOSP Build
+name: 31 OP13 AOSP RefClone + adbroot core
+run-name: ${{ inputs.ksu_type }} RefClone adbroot-core
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.ksu_type }}
@@ -10,7 +10,7 @@ env:
   ANDROID_VERSION: 'android15'
   KERNEL_VERSION: '6.6'
   KERNEL_NAME: 'android15-8-g29d86c5fc9dd-abogki428889875-4k'
-  KERNEL_FULL_VERSION: '6.6.144'
+  KERNEL_FULL_VERSION: '6.6.143'
 
 on:
   workflow_dispatch:
@@ -917,6 +917,13 @@ jobs:
           sed -i 's/${scm_version}//' ./common/scripts/setlocalversion
           echo "CONFIG_LOCALVERSION_AUTO=n" >> ./common/arch/arm64/configs/gki_defconfig
 
+      - name: 🩹 Apply adbroot core SELinux patch (ours only)
+        run: |
+          cd kernel_workspace/common
+          patch -p1 --forward --no-backup-if-mismatch < "$GITHUB_WORKSPACE/patches/0002-selinux-adbroot-core.patch"
+          grep -n 'ZYADBROOT_CORE_V1' security/selinux/selinuxfs.c
+          grep -n 'hide the ODM adbroot domain' security/selinux/hooks.c security/selinux/selinuxfs.c
+
       - name: 🔨 Build Kernel
         run: |
           WORKDIR="$(pwd)"
@@ -982,6 +989,18 @@ jobs:
         with:
           path: ${{ env.LDCACHE_DIR }}
           key: lto-cache-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
+
+      - name: ✅ Verify core marker in Image
+        run: |
+          IMG=kernel_workspace/kout/arch/arm64/boot/Image
+          ls -l "$IMG"
+          C=$(strings "$IMG" | grep -c ZYADBROOT_CORE_V1 || true)
+          echo "core marker hits: ${C}"
+          echo "adbroot strings: $(strings "$IMG" | grep -c adbroot || true)"
+          strings "$IMG" | grep -m1 '^Linux version'
+          grep -E '^(CONFIG_LTO_CLANG_THIN|CONFIG_CFI_CLANG|CONFIG_LOCALVERSION)=' kernel_workspace/kout/.config || true
+          [ "${C:-0}" -gt 0 ] || { echo "ERROR: core SELinux patch missing from Image"; exit 1; }
+          echo OK
 
       - name: 🧠 Package AK3 ZIP
         id: create_zip
