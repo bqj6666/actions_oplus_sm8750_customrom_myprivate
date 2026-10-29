@@ -135,8 +135,20 @@ jobs:
         run: |
           export PATH="$GITHUB_WORKSPACE/kernel_workspace/clang-r563880c/bin:$GITHUB_WORKSPACE/kernel_workspace/build-tools/linux-x86/bin:$PATH"
           export O="$GITHUB_WORKSPACE/kernel_workspace/kout"
+          REAL=$(readlink -f drivers/kernelsu)/feature/selinux_hide.c
+          md5sum "$REAL" > /tmp/src_before.md5
           make -j$(nproc) LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$O olddefconfig
-          make -j$(nproc) LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$O Image 2>&1 | tail -40
+          make -j$(nproc) LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$O Image 2>&1 | tee /tmp/minbuild.log | tail -40
+
+      - name: Build log diagnostics
+        if: always()
+        run: |
+          REAL=$(readlink -f kernel_workspace/common/drivers/kernelsu)/feature/selinux_hide.c
+          md5sum "$REAL"
+          cat /tmp/src_before.md5 2>/dev/null || true
+          echo "== CC lines for selinux_hide"; grep -n 'selinux_hide' /tmp/minbuild.log | head -5 || true
+          echo "== object present?"; find kernel_workspace/kout -name 'selinux_hide*.o' -exec ls -l {} \; 2>/dev/null | head -3
+          echo "== strings in object:"; find kernel_workspace/kout -name 'selinux_hide*.o' -exec sh -c 'strings "$1" | grep -c zy_sel' _ {} \; 2>/dev/null | head -3
 
       - name: Verify Image
         run: |
