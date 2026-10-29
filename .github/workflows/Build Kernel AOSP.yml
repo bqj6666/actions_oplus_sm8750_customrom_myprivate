@@ -509,9 +509,7 @@ jobs:
 
           guard = ('    if (buf && size && ksu_hide_zy_adbroot(buf, size)) {\n'
                    '        pr_info_ratelimited("zycore: adbroot write uid=%d\\n", ksu_get_uid_t(current_uid()));\n'
-                   '        /* uid>=10000 only: root(0) and system(1000) untouched */\n'
-                   '        if (ksu_get_uid_t(current_uid()) >= 10000)\n'
-                   '            return -EINVAL;\n'
+                   '        return -EINVAL;\n'
                    '    }\n\n')
 
           a1 = '    char *canon = NULL;'
@@ -1002,10 +1000,8 @@ jobs:
                         '\tif (strstr(scontext2, "adbroot")) {\n'
                         '\t\tpr_info_ratelimited("zycore: ctx uid=%d len=%u\\n",\n'
                         '\t\t\t\t    __kuid_val(current_uid()), scontext_len);\n'
-                        '\t\tif (current_uid().val >= 10000) {\n'
-                        '\t\t\tkfree(scontext2);\n'
-                        '\t\t\treturn -EINVAL;\n'
-                        '\t\t}\n'
+                        '\t\tkfree(scontext2);\n'
+                        '\t\treturn -EINVAL;\n'
                         '\t}\n', 1)
           p.write_text(s)
 
@@ -1020,8 +1016,7 @@ jobs:
           assert anchor in s1, 'sscanf anchor missing'
           s1 = s1.replace(anchor, anchor +
                           '\n\t/* hide the ODM adbroot domain from app UIDs */\n'
-                          '\tif (current_uid().val >= 10000 &&\n'
-                          '\t    (strstr(scon, "adbroot") || strstr(tcon, "adbroot"))) {\n'
+                          '\tif (strstr(scon, "adbroot") || strstr(tcon, "adbroot")) {\n'
                           '\t\tpr_info_ratelimited("zycore: sel_write_access hid adbroot\\n");\n'
                           '\t\tlength = -EINVAL;\n'
                           '\t\tgoto out;\n'
