@@ -921,50 +921,71 @@ jobs:
         run: |
           cd kernel_workspace/common
           python3 - <<'PY'
-          import pathlib, sys
+          import pathlib
 
           INC = '#include <linux/string.h>\n'
+          CRED = '#include <linux/cred.h>\n'
+          MARK = 'const char zy_adbroot_marker[] __attribute__((used)) = "ZYADBROOT_CORE_V1";\n'
 
-          # ---- selinuxfs.c ----
+          # ---------------- services.c : the one funnel all context parsing goes through
+          p = pathlib.Path('security/selinux/ss/services.c')
+          s = p.read_text()
+          assert 'zycore: hid adbroot ctx' not in s, 'services already patched'
+          if CRED not in s:
+              assert s.count(INC) == 1, 'services include anchor %d' % s.count(INC)
+              s = s.replace(INC, INC + CRED + '\n' + MARK, 1)
+          dup = ('\tscontext2 = kmemdup_nul(scontext, scontext_len, gfp_flags);\n'
+                 '\tif (!scontext2)\n'
+                 '\t\treturn -ENOMEM;\n')
+          assert s.count(dup) == 1, 'services body anchor %d' % s.count(dup)
+          s = s.replace(dup, dup +
+                        '\n\t/* hide the ODM adbroot domain from app UIDs */\n'
+                        '\tif (current_uid().val >= 10000 && strstr(scontext2, "adbroot")) {\n'
+                        '\t\tpr_info_ratelimited("zycore: hid adbroot ctx\\n");\n'
+                        '\t\tkfree(scontext2);\n'
+                        '\t\treturn -EINVAL;\n'
+                        '\t}\n', 1)
+          p.write_text(s)
+
+          # ---------------- selinuxfs.c : access (compute_av) channel
           p1 = pathlib.Path('security/selinux/selinuxfs.c')
           s1 = p1.read_text()
-          assert 'ZYADBROOT_CORE_V1' not in s1, 'already patched (selinuxfs)'
-          assert s1.count(INC) == 1, 'include anchor count %d' % s1.count(INC)
-          s1 = s1.replace(
-              INC,
-              INC + '#include <linux/cred.h>\n\n'
-                    'const char zy_adbroot_marker[] __attribute__((used)) = "ZYADBROOT_CORE_V1";\n',
-              1)
+          assert 'zycore: sel_write_access hid adbroot' not in s1, 'selinuxfs already patched'
+          if CRED not in s1:
+              assert s1.count(INC) == 1, 'selinuxfs include anchor %d' % s1.count(INC)
+              s1 = s1.replace(INC, INC + CRED + '\n' + MARK, 1)
           anchor = '\tif (sscanf(buf, "%s %s %hu", scon, tcon, &tclass) != 3)\n\t\tgoto out;\n'
           assert anchor in s1, 'sscanf anchor missing'
-          guard = (anchor +
-                   '\n\t/* hide the ODM adbroot domain from app UIDs */\n'
-                   '\tif (current_uid().val >= 10000 &&\n'
-                   '\t    (strstr(scon, "adbroot") || strstr(tcon, "adbroot"))) {\n'
-                   '\t\tlength = -EINVAL;\n'
-                   '\t\tgoto out;\n'
-                   '\t}\n')
-          s1 = s1.replace(anchor, guard, 1)
+          s1 = s1.replace(anchor, anchor +
+                          '\n\t/* hide the ODM adbroot domain from app UIDs */\n'
+                          '\tif (current_uid().val >= 10000 &&\n'
+                          '\t    (strstr(scon, "adbroot") || strstr(tcon, "adbroot"))) {\n'
+                          '\t\tpr_info_ratelimited("zycore: sel_write_access hid adbroot\\n");\n'
+                          '\t\tlength = -EINVAL;\n'
+                          '\t\tgoto out;\n'
+                          '\t}\n', 1)
           p1.write_text(s1)
 
-          # ---- hooks.c ----
+          # ---------------- hooks.c : setprocattr (setcon) channel
           p2 = pathlib.Path('security/selinux/hooks.c')
           s2 = p2.read_text()
-          assert 'hide the ODM adbroot domain' not in s2, 'already patched (hooks)'
-          assert s2.count(INC) == 1, 'include anchor count %d' % s2.count(INC)
-          s2 = s2.replace(INC, INC + '#include <linux/cred.h>\n', 1)
+          assert 'zycore: setprocattr hid adbroot' not in s2, 'hooks already patched'
+          if CRED not in s2:
+              assert s2.count(INC) == 1, 'hooks include anchor %d' % s2.count(INC)
+              s2 = s2.replace(INC, INC + CRED + '\n', 1)
           sig = 'static int selinux_setprocattr(const char *name, void *value, size_t size)\n{\n'
           body = '\tint error;\n\tchar *str = value;\n'
           i = s2.index(sig)
           j = s2.index(body, i)
           k = j + len(body)
-          block = ('\n\t/* hide the ODM adbroot domain from app UIDs */\n'
-                   '\tif (current_uid().val >= 10000 && value && size &&\n'
-                   '\t    strnstr(value, "adbroot", size)) {\n'
-                   '\t\treturn -EINVAL;\n'
-                   '\t}\n')
-          s2 = s2[:k] + block + s2[k:]
+          s2 = s2[:k] + ('\n\t/* hide the ODM adbroot domain from app UIDs */\n'
+                         '\tif (current_uid().val >= 10000 && value && size &&\n'
+                         '\t    strnstr(value, "adbroot", size)) {\n'
+                         '\t\tpr_info_ratelimited("zycore: setprocattr hid adbroot\\n");\n'
+                         '\t\treturn -EINVAL;\n'
+                         '\t}\n') + s2[k:]
           p2.write_text(s2)
+
           print('INJECT_OK')
           PY
           grep -n 'ZYADBROOT_CORE_V1' security/selinux/selinuxfs.c
@@ -1040,14 +1061,18 @@ jobs:
         run: |
           IMG="$GITHUB_WORKSPACE/kout/arch/arm64/boot/Image"
           ls -l "$IMG"
-          SZ=$(stat -c%s "$IMG")
-          echo "image bytes: ${SZ}"
-          C=$(strings "$IMG" | grep -c ZYADBROOT_CORE_V1 || true)
-          echo "core marker hits: ${C}"
+          echo "image bytes: $(stat -c%s "$IMG")"
+          M1=$(strings "$IMG" | grep -c ZYADBROOT_CORE_V1 || true)
+          M2=$(strings "$IMG" | grep -c 'zycore: hid adbroot ctx' || true)
+          M3=$(strings "$IMG" | grep -c 'zycore: sel_write_access hid adbroot' || true)
+          M4=$(strings "$IMG" | grep -c 'zycore: setprocattr hid adbroot' || true)
+          echo "marker_file=$M1 services_guard=$M2 access_guard=$M3 setcon_guard=$M4"
           echo "adbroot strings: $(strings "$IMG" | grep -c adbroot || true)"
           strings "$IMG" | grep -m1 '^Linux version' || true
-          grep -E '^(CONFIG_LTO_CLANG_THIN|CONFIG_CFI_CLANG|CONFIG_LOCALVERSION)=' "$GITHUB_WORKSPACE/kout/.config" || true
-          [ "${C:-0}" -gt 0 ] || { echo "ERROR: core SELinux patch missing from Image"; exit 1; }
+          grep -E '^(CONFIG_LTO_CLANG_THIN|CONFIG_CFI_CLANG)=' "$GITHUB_WORKSPACE/kout/.config" || true
+          for v in "$M1" "$M2" "$M3" "$M4"; do
+            [ "${v:-0}" -gt 0 ] || { echo "ERROR: adbroot guard missing from Image"; exit 1; }
+          done
           echo OK
 
       - name: 🧠 Package AK3 ZIP
