@@ -1038,13 +1038,15 @@ jobs:
 
       - name: ✅ Verify core marker in Image
         run: |
-          IMG=kernel_workspace/kout/arch/arm64/boot/Image
+          IMG="$GITHUB_WORKSPACE/kout/arch/arm64/boot/Image"
           ls -l "$IMG"
+          SZ=$(stat -c%s "$IMG")
+          echo "image bytes: ${SZ}"
           C=$(strings "$IMG" | grep -c ZYADBROOT_CORE_V1 || true)
           echo "core marker hits: ${C}"
           echo "adbroot strings: $(strings "$IMG" | grep -c adbroot || true)"
-          strings "$IMG" | grep -m1 '^Linux version'
-          grep -E '^(CONFIG_LTO_CLANG_THIN|CONFIG_CFI_CLANG|CONFIG_LOCALVERSION)=' kernel_workspace/kout/.config || true
+          strings "$IMG" | grep -m1 '^Linux version' || true
+          grep -E '^(CONFIG_LTO_CLANG_THIN|CONFIG_CFI_CLANG|CONFIG_LOCALVERSION)=' "$GITHUB_WORKSPACE/kout/.config" || true
           [ "${C:-0}" -gt 0 ] || { echo "ERROR: core SELinux patch missing from Image"; exit 1; }
           echo OK
 
