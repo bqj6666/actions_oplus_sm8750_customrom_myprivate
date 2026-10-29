@@ -142,6 +142,13 @@ jobs:
         run: |
           IMG=kernel_workspace/kout/arch/arm64/boot/Image
           ls -l "$IMG"
+          echo "== diagnostics =="
+          grep -E '^(CONFIG_KSU|CONFIG_KSU_SUSFS)=' kernel_workspace/kout/.config || echo "CONFIG_KSU missing from .config"
+          ls -l kernel_workspace/common/drivers/kernelsu || true
+          REAL=$(readlink -f kernel_workspace/common/drivers/kernelsu)/feature/selinux_hide.c
+          echo "real file: $REAL"
+          grep -c 'zy_sel:' "$REAL" || true
+          echo "KernelSU strings in Image: $(strings "$IMG" | grep -c 'KernelSU' || true)"
           H=$(strings "$IMG" | grep -c 'zy_sel' || true)
           P=$(strings "$IMG" | grep -c 'KSU_PROBE_MARKER_V1' || true)
           echo "zy_sel hits: $H ; probe hits: $P"
