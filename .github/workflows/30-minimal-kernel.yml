@@ -65,9 +65,11 @@ jobs:
             done
             tar -zxf c.tar.gz && rm -f c.tar.gz && cd -
           fi
-          if [ ! -x "$BT/linux-x86/bin/make" ]; then
+          if [ -z "$(ls -A "$BT" 2>/dev/null)" ]; then
+            rm -rf "$BT"
             git clone -q --depth=1 -b ks-kernel.lnx.4.0.r1-rel https://git.codelinaro.org/clo/la/kernel/prebuilts/build-tools.git "$BT"
           fi
+          ls -d "$BT"/linux-x86/bin 2>/dev/null || ls -A "$BT" | head
           "$CL/bin/clang" --version | head -1
           df -h /
 
