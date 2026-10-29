@@ -130,6 +130,83 @@ jobs:
           PY
           tail -3 kernel_workspace/kout/.config
 
+      - name: Feature patches (LZ4 / LZ4KD / LRNG / BBG / IP_SET / ZRAM)
+        working-directory: kernel_workspace/common
+        run: |
+          set -e
+          cd "$GITHUB_WORKSPACE/kernel_workspace"
+          git clone -q --depth=1 https://github.com/palazik/kernel_patches.git kernel_patches
+          ln -sfn kernel_patches wildkernels_patches
+          git clone -q --depth=1 https://github.com/ShirkNeko/SukiSU_patch.git SukiSU_patch
+
+          cd common
+          echo "== LZ4 / ZSTD =="
+          mkdir -p lib/lz4/lz4armv8
+          cp ../kernel_patches/zram/001-lz4.patch ./
+          cp ../kernel_patches/zram/lz4armv8.S lib/lz4/lz4armv8.S
+          cp ../kernel_patches/zram/lz4armv8.S lib/lz4/lz4armv8/lz4armv8.S
+          cp ../kernel_patches/zram/002-zstd.patch ./
+          git apply -p1 < 001-lz4.patch || echo "LZ4 patch skipped"
+          patch -p1 < 002-zstd.patch || echo "ZSTD patch skipped"
+
+          echo "== LZ4KD =="
+          cp -r ../SukiSU_patch/other/zram/lz4k/include/linux/* ./include/linux/
+          cp -r ../SukiSU_patch/other/zram/lz4k/lib/* ./lib
+          cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./crypto
+          cp ../SukiSU_patch/other/zram/zram_patch/6.6/lz4kd.patch ./
+          patch -p1 -F 3 < lz4kd.patch || echo "LZ4KD patch skipped"
+
+          echo "== LRNG =="
+          patch -p1 --forward --no-backup-if-mismatch < ../wildkernels_patches/common/lrng/lrng_v60_android15-6.6.patch || true
+          cat >> arch/arm64/configs/gki_defconfig <<'EOF'
+          CONFIG_RANDOM_DEFAULT_IMPL=n
+          CONFIG_LRNG=y
+          CONFIG_LRNG_COLLECTION_SIZE_1024=y
+          CONFIG_LRNG_HEALTH_TESTS=y
+          CONFIG_LRNG_IRQ=y
+          CONFIG_LRNG_CONTINUOUS_COMPRESSION_ENABLED=y
+          EOF
+
+          echo "== BBG =="
+          echo "CONFIG_BBG=y" >> arch/arm64/configs/gki_defconfig
+          curl -sSL https://github.com/cctv18/Baseband-guard/raw/master/setup.sh | bash
+          sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' security/Kconfig || true
+
+          echo "== IP_SET / IPv6 NAT =="
+          echo "CONFIG_BPF_STREAM_PARSER=y" >> arch/arm64/configs/gki_defconfig
+          cat >> arch/arm64/configs/gki_defconfig <<'EOF'
+          CONFIG_IP_SET=y
+          CONFIG_IP_SET_MAX=65534
+          CONFIG_IP_SET_BITMAP_IP=y
+          CONFIG_IP_SET_BITMAP_IPMAC=y
+          CONFIG_IP_SET_BITMAP_PORT=y
+          CONFIG_IP_SET_HASH_IP=y
+          CONFIG_IP_SET_HASH_IPMARK=y
+          CONFIG_IP_SET_HASH_IPPORT=y
+          CONFIG_IP_SET_HASH_IPPORTIP=y
+          CONFIG_IP_SET_HASH_IPPORTNET=y
+          CONFIG_IP_SET_HASH_IPMAC=y
+          CONFIG_IP_SET_HASH_MAC=y
+          CONFIG_IP_SET_HASH_NETPORTNET=y
+          CONFIG_IP_SET_HASH_NET=y
+          CONFIG_IP_SET_HASH_NETNET=y
+          CONFIG_IP_SET_HASH_NETPORT=y
+          CONFIG_IP_SET_HASH_NETIFACE=y
+          CONFIG_IP_SET_LIST_SET=y
+          CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y
+          CONFIG_NETFILTER_XT_SET=y
+          CONFIG_IP6_NF_NAT=y
+          CONFIG_IP6_NF_TARGET_MASQUERADE=y
+          EOF
+          [ -f ../wildkernels_patches/common/IPv6_NAT_FIX.patch ] && patch -p1 -F 3 < ../wildkernels_patches/common/IPv6_NAT_FIX.patch || true
+
+          echo "== ZRAM writeback =="
+          cat >> arch/arm64/configs/gki_defconfig <<'EOF'
+          CONFIG_ZRAM_WRITEBACK=y
+          CONFIG_ZRAM_MEMORY_TRACKING=y
+          EOF
+          echo "features done"
+
       - name: Apply core SELinux patch (security/selinux)
         working-directory: kernel_workspace/common
         run: |
