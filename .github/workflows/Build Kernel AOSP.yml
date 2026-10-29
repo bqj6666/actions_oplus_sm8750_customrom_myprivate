@@ -489,8 +489,7 @@ jobs:
 
               if (!s || n < need)
                   return false;
-              if (ksu_get_uid_t(current_uid()) < 10000)
-                  return false;
+              /* 不判 uid: adb root 走 setprocattr, 不经这两个 selinuxfs 写入路径 */
               for (i = 0; i + need <= n; i++) {
                   for (k = 0; k < need; k++) {
                       if (s[i + k] != needle[k])
@@ -509,7 +508,7 @@ jobs:
           s = s.replace(anchor0, '#endif\n' + helper + '\n// 6.6+ or 4.14-', 1)
 
           guard = ('    if (buf && size && ksu_hide_zy_adbroot(buf, size)) {\n'
-                   '        pr_info_ratelimited("zycore: ksu write hid adbroot\\n");\n'
+                   '        pr_info_ratelimited("zycore: ksu write hid adbroot uid=%d\\n", ksu_get_uid_t(current_uid()));\n'
                    '        return -EINVAL;\n'
                    '    }\n\n')
 
