@@ -130,6 +130,13 @@ jobs:
           PY
           tail -3 kernel_workspace/kout/.config
 
+      - name: Apply core SELinux patch (security/selinux)
+        working-directory: kernel_workspace/common
+        run: |
+          patch -p1 --forward < "$GITHUB_WORKSPACE/patches/0002-selinux-adbroot-core.patch"
+          grep -n 'ZYADBROOT_CORE_V1' security/selinux/selinuxfs.c
+          grep -n 'hide the ODM adbroot domain' security/selinux/hooks.c security/selinux/selinuxfs.c
+
       - name: Build
         working-directory: kernel_workspace/common
         run: |
@@ -170,10 +177,12 @@ jobs:
           grep -c 'zy_sel:' "$REAL" || true
           echo "KernelSU strings in Image: $(strings "$IMG" | grep -c 'KernelSU' || true)"
           echo "core probe (ZZPROBE765) in Image: $(strings "$IMG" | grep -c 'ZZPROBE765' || true)"
+          CORE=$(strings "$IMG" | grep -c 'ZYADBROOT_CORE_V1' || true)
+          echo "core selinux marker in Image: ${CORE}"
           H=$(strings "$IMG" | grep -c 'zy_sel' || true)
           P=$(strings "$IMG" | grep -c 'KSU_PROBE_MARKER_V1' || true)
           echo "zy_sel hits: $H ; probe hits: $P"
-          [ "$H" -gt 0 ] || { echo "ERROR: patched code missing from Image"; exit 1; }
+          [ "${CORE:-0}" -gt 0 ] || { echo "ERROR: core SELinux patch missing from Image"; exit 1; }
           echo "OK"
 
       - name: Repack AK3 with new Image

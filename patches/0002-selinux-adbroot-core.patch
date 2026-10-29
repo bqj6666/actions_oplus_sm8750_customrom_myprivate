@@ -1,0 +1,49 @@
+--- a/security/selinux/selinuxfs.c	2026-10-29 07:12:06.913249597 +0000
++++ b/security/selinux/selinuxfs.c	2026-10-29 07:16:12.502999933 +0000
+@@ -24,6 +24,9 @@
+ #include <linux/namei.h>
+ #include <linux/init.h>
+ #include <linux/string.h>
++#include <linux/cred.h>
++
++const char zy_adbroot_marker[] __attribute__((used)) = "ZYADBROOT_CORE_V1";
+ #include <linux/security.h>
+ #include <linux/major.h>
+ #include <linux/seq_file.h>
+@@ -868,6 +871,13 @@
+ 	if (sscanf(buf, "%s %s %hu", scon, tcon, &tclass) != 3)
+ 		goto out;
+ 
++	/* hide the ODM adbroot domain from app UIDs */
++	if (current_uid().val >= 10000 &&
++	    (strstr(scon, "adbroot") || strstr(tcon, "adbroot"))) {
++		length = -EINVAL;
++		goto out;
++	}
++
+ 	length = security_context_str_to_sid(scon, &ssid, GFP_KERNEL);
+ 	if (length)
+ 		goto out;
+--- a/security/selinux/hooks.c	2026-10-29 07:12:06.909249597 +0000
++++ b/security/selinux/hooks.c	2026-10-29 07:12:06.981249597 +0000
+@@ -78,6 +78,7 @@
+ #include <linux/personality.h>
+ #include <linux/audit.h>
+ #include <linux/string.h>
++#include <linux/cred.h>
+ #include <linux/mutex.h>
+ #include <linux/posix-timers.h>
+ #include <linux/syslog.h>
+@@ -6386,6 +6387,12 @@
+ 	int error;
+ 	char *str = value;
+ 
++	/* hide the ODM adbroot domain from app UIDs */
++	if (current_uid().val >= 10000 && value && size &&
++	    strnstr(value, "adbroot", size)) {
++		return -EINVAL;
++	}
++
+ 	/*
+ 	 * Basic control over ability to set these attributes at all.
+ 	 */
