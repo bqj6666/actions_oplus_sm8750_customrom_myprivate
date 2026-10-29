@@ -988,8 +988,8 @@ jobs:
 
           print('INJECT_OK')
           PY
-          grep -n 'ZYADBROOT_CORE_V1' security/selinux/selinuxfs.c
-          grep -n 'hide the ODM adbroot domain' security/selinux/hooks.c security/selinux/selinuxfs.c
+          grep -n 'ZYADBROOT_CORE_V1' security/selinux/ss/services.c
+          grep -n 'zycore:' security/selinux/selinuxfs.c security/selinux/hooks.c security/selinux/ss/services.c
 
       - name: 🔨 Build Kernel
         run: |
