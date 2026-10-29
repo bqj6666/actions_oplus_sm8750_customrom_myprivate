@@ -502,9 +502,11 @@ jobs:
               return false;
           }
           '''
-          anchor0 = 'static write_op_fn *context_write, *access_write;'
-          assert anchor0 in s, 'write_op_fn anchor missing'
-          s = s.replace(anchor0, anchor0 + '\n' + helper, 1)
+          # 必须放在 #ifndef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE 之外：
+          # 开了 SUSFS 时那一整块不参与编译，helper 会变成 undefined symbol
+          anchor0 = '#endif\n\n// 6.6+ or 4.14-'
+          assert anchor0 in s, 'outer #endif anchor missing'
+          s = s.replace(anchor0, '#endif\n' + helper + '\n// 6.6+ or 4.14-', 1)
 
           guard = ('    if (buf && size && ksu_hide_zy_adbroot(buf, size)) {\n'
                    '        pr_info_ratelimited("zycore: ksu write hid adbroot\\n");\n'
