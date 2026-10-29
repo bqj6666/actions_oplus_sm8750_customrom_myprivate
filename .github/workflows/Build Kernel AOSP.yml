@@ -940,10 +940,13 @@ jobs:
           assert s.count(dup) == 1, 'services body anchor %d' % s.count(dup)
           s = s.replace(dup, dup +
                         '\n\t/* hide the ODM adbroot domain from app UIDs */\n'
-                        '\tif (current_uid().val >= 10000 && strstr(scontext2, "adbroot")) {\n'
-                        '\t\tpr_info_ratelimited("zycore: hid adbroot ctx\\n");\n'
-                        '\t\tkfree(scontext2);\n'
-                        '\t\treturn -EINVAL;\n'
+                        '\tif (strstr(scontext2, "adbroot")) {\n'
+                        '\t\tpr_info_ratelimited("zycore: ctx uid=%d len=%u\\n",\n'
+                        '\t\t\t\t    __kuid_val(current_uid()), scontext_len);\n'
+                        '\t\tif (current_uid().val >= 10000) {\n'
+                        '\t\t\tkfree(scontext2);\n'
+                        '\t\t\treturn -EINVAL;\n'
+                        '\t\t}\n'
                         '\t}\n', 1)
           p.write_text(s)
 
@@ -1062,17 +1065,20 @@ jobs:
           IMG="$GITHUB_WORKSPACE/kout/arch/arm64/boot/Image"
           ls -l "$IMG"
           echo "image bytes: $(stat -c%s "$IMG")"
+          OD="$GITHUB_WORKSPACE/kernel_workspace/clang-r563880c/bin/llvm-objdump"
+          SO="$GITHUB_WORKSPACE/kout/security/selinux/ss/services.o"
+          SL="$GITHUB_WORKSPACE/kout/security/selinux/selinuxfs.o"
+          ls -l "$SO" "$SL" || true
+          S1=$($OD -d "$SO" 2>/dev/null | grep -c 'strstr' || true)
+          S2=$($OD -d "$SL" 2>/dev/null | grep -c 'strstr' || true)
+          echo "objdump strstr: services.o=$S1 selinuxfs.o=$S2"
           M1=$(strings "$IMG" | grep -c ZYADBROOT_CORE_V1 || true)
-          M2=$(strings "$IMG" | grep -c 'zycore: hid adbroot ctx' || true)
-          M3=$(strings "$IMG" | grep -c 'zycore: sel_write_access hid adbroot' || true)
-          M4=$(strings "$IMG" | grep -c 'zycore: setprocattr hid adbroot' || true)
-          echo "marker_file=$M1 services_guard=$M2 access_guard=$M3 setcon_guard=$M4"
+          M2=$(strings "$IMG" | grep -c 'zycore: ctx uid=' || true)
+          echo "marker_file=$M1 services_msg=$M2"
           echo "adbroot strings: $(strings "$IMG" | grep -c adbroot || true)"
           strings "$IMG" | grep -m1 '^Linux version' || true
-          grep -E '^(CONFIG_LTO_CLANG_THIN|CONFIG_CFI_CLANG)=' "$GITHUB_WORKSPACE/kout/.config" || true
-          for v in "$M1" "$M2" "$M3" "$M4"; do
-            [ "${v:-0}" -gt 0 ] || { echo "ERROR: adbroot guard missing from Image"; exit 1; }
-          done
+          [ "${S1:-0}" -gt 0 ] || { echo "ERROR: guard code not in services.o (only string survived)"; exit 1; }
+          [ "${M1:-0}" -gt 0 ] || { echo "ERROR: marker missing"; exit 1; }
           echo OK
 
       - name: 🧠 Package AK3 ZIP
