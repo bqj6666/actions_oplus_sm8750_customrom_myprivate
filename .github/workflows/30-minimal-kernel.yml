@@ -139,7 +139,9 @@ jobs:
           md5sum "$REAL" > /tmp/src_before.md5
           # control probe in a core file: if this string is missing from the Image too,
           # the build is not compiling this source tree at all
-          grep -q ZZPROBE765 init/main.c || sed -i '0,/^asmlinkage __visible void __init start_kernel(void)$/s//asmlinkage __visible void __init start_kernel(void)\n{\n\tpr_info("ZZPROBE765\\n");/' init/main.c
+          if ! grep -q ZZPROBE765 init/main.c; then
+            perl -0pi -e 's/(asmlinkage __visible void __init start_kernel\(void\)\n\{)/$1\n\tpr_info("ZZPROBE765\\n");/' init/main.c
+          fi
           grep -n 'ZZPROBE765' init/main.c | head -2
           make -j$(nproc) LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$O olddefconfig
           make -j$(nproc) LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$O Image 2>&1 | tee /tmp/minbuild.log | tail -40
