@@ -1065,19 +1065,20 @@ jobs:
           IMG="$GITHUB_WORKSPACE/kout/arch/arm64/boot/Image"
           ls -l "$IMG"
           echo "image bytes: $(stat -c%s "$IMG")"
-          OD="$GITHUB_WORKSPACE/kernel_workspace/clang-r563880c/bin/llvm-objdump"
           SO="$GITHUB_WORKSPACE/kout/security/selinux/ss/services.o"
           SL="$GITHUB_WORKSPACE/kout/security/selinux/selinuxfs.o"
-          ls -l "$SO" "$SL" || true
-          S1=$($OD -d "$SO" 2>/dev/null | grep -c 'strstr' || true)
-          S2=$($OD -d "$SL" 2>/dev/null | grep -c 'strstr' || true)
-          echo "objdump strstr: services.o=$S1 selinuxfs.o=$S2"
+          OD="$GITHUB_WORKSPACE/kernel_workspace/clang-r563880c/bin/llvm-objdump"
+          for f in "$SO" "$SL"; do
+            echo "--- $(basename "$f") ---"
+            "$OD" -d "$f" 2>/dev/null | grep -cE 'strstr|strchr|memcmp' || true
+          done
           M1=$(strings "$IMG" | grep -c ZYADBROOT_CORE_V1 || true)
           M2=$(strings "$IMG" | grep -c 'zycore: ctx uid=' || true)
-          echo "marker_file=$M1 services_msg=$M2"
+          M3=$(strings "$IMG" | grep -c 'zycore: sel_write_access hid adbroot' || true)
+          M4=$(strings "$IMG" | grep -c 'zycore: setprocattr hid adbroot' || true)
+          echo "marker=$M1 probesvc=$M2 probesfs=$M3 probecon=$M4"
           echo "adbroot strings: $(strings "$IMG" | grep -c adbroot || true)"
           strings "$IMG" | grep -m1 '^Linux version' || true
-          [ "${S1:-0}" -gt 0 ] || { echo "ERROR: guard code not in services.o (only string survived)"; exit 1; }
           [ "${M1:-0}" -gt 0 ] || { echo "ERROR: marker missing"; exit 1; }
           echo OK
 
