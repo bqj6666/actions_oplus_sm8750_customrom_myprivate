@@ -468,6 +468,62 @@ jobs:
           echo "📦 [3/3] Applying 50_add_susfs kernel patch..."
           patch -p1 < 50_add_susfs_in_gki-android15-6.6.patch
 
+      - name: 🩹 Patch KSU selinux_hide (the real adbroot channel)
+        working-directory: kernel_workspace/common
+        run: |
+          python3 - <<'PY'
+          import pathlib, subprocess
+
+          real = subprocess.check_output(['readlink', '-f', 'drivers/kernelsu']).decode().strip()
+          p = pathlib.Path(real) / 'feature' / 'selinux_hide.c'
+          s = p.read_text()
+          assert 'ksu_hide_zy_adbroot' not in s, 'already patched'
+
+          helper = '''
+          /* zycore: hide the ODM adbroot domain from app UIDs */
+          static bool ksu_hide_zy_adbroot(const char *s, size_t n)
+          {
+              static const char needle[] = "adbroot";
+              const size_t need = sizeof(needle) - 1;
+              size_t i, k;
+
+              if (!s || n < need)
+                  return false;
+              if (ksu_get_uid_t(current_uid()) < 10000)
+                  return false;
+              for (i = 0; i + need <= n; i++) {
+                  for (k = 0; k < need; k++) {
+                      if (s[i + k] != needle[k])
+                          break;
+                  }
+                  if (k == need)
+                      return true;
+              }
+              return false;
+          }
+          '''
+          anchor0 = 'static write_op_fn *context_write, *access_write;'
+          assert anchor0 in s, 'write_op_fn anchor missing'
+          s = s.replace(anchor0, anchor0 + '\n' + helper, 1)
+
+          guard = ('    if (buf && size && ksu_hide_zy_adbroot(buf, size)) {\n'
+                   '        pr_info_ratelimited("zycore: ksu write hid adbroot\\n");\n'
+                   '        return -EINVAL;\n'
+                   '    }\n\n')
+
+          a1 = '    char *canon = NULL;'
+          assert a1 in s, 'context anchor missing'
+          s = s.replace(a1, guard + a1, 1)
+          a2 = '    char *scon = NULL, *tcon = NULL;'
+          assert a2 in s, 'access anchor missing'
+          s = s.replace(a2, guard + a2, 1)
+          p.write_text(s)
+          print('KSU_INJECT_OK', real)
+          PY
+          REAL=$(readlink -f drivers/kernelsu)/feature/selinux_hide.c
+          grep -n 'ksu_hide_zy_adbroot' "$REAL"
+          grep -c 'zycore: ksu write hid adbroot' "$REAL"
+
       - name: ⚙️ Configure Kernel Options
         run: |
           cd kernel_workspace
@@ -1076,7 +1132,8 @@ jobs:
           M2=$(strings "$IMG" | grep -c 'zycore: ctx uid=' || true)
           M3=$(strings "$IMG" | grep -c 'zycore: sel_write_access hid adbroot' || true)
           M4=$(strings "$IMG" | grep -c 'zycore: setprocattr hid adbroot' || true)
-          echo "marker=$M1 probesvc=$M2 probesfs=$M3 probecon=$M4"
+          M5=$(strings "$IMG" | grep -c 'zycore: ksu write hid adbroot' || true)
+          echo "marker=$M1 probesvc=$M2 probesfs=$M3 probecon=$M4 ksuguard=$M5"
           echo "adbroot strings: $(strings "$IMG" | grep -c adbroot || true)"
           strings "$IMG" | grep -m1 '^Linux version' || true
           [ "${M1:-0}" -gt 0 ] || { echo "ERROR: marker missing"; exit 1; }
