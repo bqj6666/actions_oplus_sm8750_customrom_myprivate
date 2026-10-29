@@ -130,7 +130,7 @@ jobs:
           PY
           tail -3 kernel_workspace/kout/.config
 
-      - name: Feature patches (LZ4 / LZ4KD / LRNG / BBG / IP_SET / ZRAM)
+      - name: Feature patches (LZ4 / LZ4KD / IP_SET / ZRAM) - BBG and LRNG removed
         working-directory: kernel_workspace/common
         run: |
           set -e
@@ -155,22 +155,6 @@ jobs:
           cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./crypto
           cp ../SukiSU_patch/other/zram/zram_patch/6.6/lz4kd.patch ./
           patch -p1 -F 3 < lz4kd.patch || echo "LZ4KD patch skipped"
-
-          echo "== LRNG =="
-          patch -p1 --forward --no-backup-if-mismatch < ../wildkernels_patches/common/lrng/lrng_v60_android15-6.6.patch || true
-          cat >> arch/arm64/configs/gki_defconfig <<'EOF'
-          CONFIG_RANDOM_DEFAULT_IMPL=n
-          CONFIG_LRNG=y
-          CONFIG_LRNG_COLLECTION_SIZE_1024=y
-          CONFIG_LRNG_HEALTH_TESTS=y
-          CONFIG_LRNG_IRQ=y
-          CONFIG_LRNG_CONTINUOUS_COMPRESSION_ENABLED=y
-          EOF
-
-          echo "== BBG =="
-          echo "CONFIG_BBG=y" >> arch/arm64/configs/gki_defconfig
-          curl -sSL https://github.com/cctv18/Baseband-guard/raw/master/setup.sh | bash
-          sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' security/Kconfig || true
 
           echo "== IP_SET / IPv6 NAT =="
           echo "CONFIG_BPF_STREAM_PARSER=y" >> arch/arm64/configs/gki_defconfig
@@ -267,7 +251,7 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           rm -rf pkg && mkdir pkg && unzip -q ref.zip -d pkg
           cp kernel_workspace/kout/arch/arm64/boot/Image pkg/Image
-          ( cd pkg && zip -qr9 "$GITHUB_WORKSPACE/AnyKernel3_BakaSU_35205_6.6.143_adbroot.zip" . )
+          ( cd pkg && zip -qr9 "$GITHUB_WORKSPACE/AnyKernel3_BakaSU_35205_6.6.143_adbroot_safe.zip" . )
           ls -lh AnyKernel3_*.zip
           sha256sum AnyKernel3_*.zip | tee sha256.txt
 
@@ -277,4 +261,4 @@ jobs:
         run: |
           gh release create "ci-min-${{ github.run_id }}" --repo "$GITHUB_REPOSITORY" \
             --title "minimal kernel ${{ github.run_id }}" \
-            --notes "$(cat sha256.txt)" "AnyKernel3_BakaSU_35205_6.6.143_adbroot.zip"
+            --notes "$(cat sha256.txt)" "AnyKernel3_BakaSU_35205_6.6.143_adbroot_safe.zip"
