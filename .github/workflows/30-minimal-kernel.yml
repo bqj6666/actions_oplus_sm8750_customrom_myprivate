@@ -38,35 +38,42 @@ jobs:
           sudo apt-get install -y -qq libelf-dev bc bison flex libssl-dev python3 python-is-python3 zip unzip aria2
           df -h /
 
-      - name: Cache clang
-        uses: actions/cache@v4
+      - name: Restore clang (shared cache from the 10-workflow)
+        uses: actions/cache/restore@v4
         with:
-          path: tc/clang
-          key: min-clang-r563880c
+          path: kernel_workspace/clang-r563880c
+          key: Linux-aosp-clang-clang-r563880c
 
-      - name: Cache build-tools
-        uses: actions/cache@v4
+      - name: Restore build-tools (shared cache)
+        uses: actions/cache/restore@v4
         with:
-          path: tc/build-tools
-          key: min-buildtools-ks-kernel
+          path: kernel_workspace/build-tools
+          key: codelinaro-build-tools-ks-kernel-lnx-4.0
 
-      - name: "Toolchain clang r563880c"
+      - name: Ensure toolchain present
         run: |
-          mkdir -p tc && cd tc
-          if [ -x clang/bin/clang ]; then echo "clang restored from cache"; else
-          curl -fL --retry 5 --retry-delay 3 -o clang.tar.gz "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz"
-          ls -lh clang.tar.gz
-          mkdir -p clang && tar -C clang -zxf clang.tar.gz
-          ./clang/bin/clang --version | head -1
+          set -e
+          CL=kernel_workspace/clang-r563880c
+          BT=kernel_workspace/build-tools
+          if [ ! -x "$CL/bin/clang" ]; then
+            echo "cache miss, downloading clang"
+            mkdir -p "$CL" && cd "$CL"
+            for try in 1 2 3 4 5; do
+              curl -fL -C - --retry 3 --retry-all-errors -o c.tar.gz \
+                "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz" && break
+              echo "retry $try"; sleep 5
+            done
+            tar -zxf c.tar.gz && rm -f c.tar.gz && cd -
           fi
-          if [ -x build-tools/linux-x86/bin/make ]; then echo "build-tools restored"; else
-          git clone -q --depth=1 -b ks-kernel.lnx.4.0.r1-rel https://git.codelinaro.org/clo/la/kernel/prebuilts/build-tools.git build-tools
+          if [ ! -x "$BT/linux-x86/bin/make" ]; then
+            git clone -q --depth=1 -b ks-kernel.lnx.4.0.r1-rel https://git.codelinaro.org/clo/la/kernel/prebuilts/build-tools.git "$BT"
           fi
-          ls clang/bin/clang build-tools/linux-x86/bin/make
+          "$CL/bin/clang" --version | head -1
+          df -h /
 
       - name: Kernel source (pinned commit)
         run: |
-          mkdir -p ws && cd ws
+          mkdir -p kernel_workspace && cd kernel_workspace
           curl -L --retry 3 -o src.zip "https://github.com/palazik/android_kernel_common_oneplus_sm8750/archive/$KSRC_COMMIT.zip"
           unzip -q src.zip
           mv android_kernel_common_oneplus_sm8750-* common
@@ -75,7 +82,7 @@ jobs:
           sed -i 's/ -dirty//g' common/scripts/setlocalversion
 
       - name: KSU setup + pin
-        working-directory: ws/common
+        working-directory: kernel_workspace/common
         run: |
           curl -LSs "https://raw.githubusercontent.com/Baka-SU/BakaSU/$KSU_COMMIT/kernel/setup.sh" | bash -s main
           ls -l drivers/kernelsu
@@ -86,7 +93,7 @@ jobs:
           ls -l kernel/feature/selinux_hide.c
 
       - name: SUSFS (pinned)
-        working-directory: ws
+        working-directory: kernel_workspace
         run: |
           git clone -q --depth=1 -b gki-android15-6.6 https://gitlab.com/simonpunk/susfs4ksu.git
           cd susfs4ksu && git fetch -q --depth=1 origin $SUSFS_COMMIT && git checkout -q FETCH_HEAD && cd ..
@@ -96,7 +103,7 @@ jobs:
           cd common && patch -p1 --forward < 50_add_susfs_in_gki-android15-6.6.patch
 
       - name: Apply our patch (real path, not symlink games)
-        working-directory: ws/common
+        working-directory: kernel_workspace/common
         run: |
           REAL=$(readlink -f drivers/kernelsu)/feature/selinux_hide.c
           echo "real file: $REAL"
@@ -115,23 +122,23 @@ jobs:
           d = pathlib.Path('ref/Image').read_bytes()
           i, j = d.find(b'IKCFG_ST'), d.find(b'IKCFG_ED')
           assert i > 0 and j > i, 'no ikconfig in reference Image'
-          pathlib.Path('ws/kout').mkdir(parents=True, exist_ok=True)
-          pathlib.Path('ws/kout/.config').write_bytes(gzip.decompress(d[i+8:j]))
+          pathlib.Path('kernel_workspace/kout').mkdir(parents=True, exist_ok=True)
+          pathlib.Path('kernel_workspace/kout/.config').write_bytes(gzip.decompress(d[i+8:j]))
           print('reference .config lines:', gzip.decompress(d[i+8:j]).count(b'\n'))
           PY
-          tail -3 ws/kout/.config
+          tail -3 kernel_workspace/kout/.config
 
       - name: Build
-        working-directory: ws/common
+        working-directory: kernel_workspace/common
         run: |
-          export PATH="$GITHUB_WORKSPACE/tc/clang/bin:$GITHUB_WORKSPACE/tc/build-tools/linux-x86/bin:$PATH"
-          export O="$GITHUB_WORKSPACE/ws/kout"
+          export PATH="$GITHUB_WORKSPACE/kernel_workspace/clang-r563880c/bin:$GITHUB_WORKSPACE/kernel_workspace/build-tools/linux-x86/bin:$PATH"
+          export O="$GITHUB_WORKSPACE/kernel_workspace/kout"
           make -j$(nproc) LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$O olddefconfig
           make -j$(nproc) LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$O Image 2>&1 | tail -40
 
       - name: Verify Image
         run: |
-          IMG=ws/kout/arch/arm64/boot/Image
+          IMG=kernel_workspace/kout/arch/arm64/boot/Image
           ls -l "$IMG"
           H=$(strings "$IMG" | grep -c 'zy_sel' || true)
           P=$(strings "$IMG" | grep -c 'KSU_PROBE_MARKER_V1' || true)
@@ -143,7 +150,7 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE"
           rm -rf pkg && mkdir pkg && unzip -q ref.zip -d pkg
-          cp ws/kout/arch/arm64/boot/Image pkg/Image
+          cp kernel_workspace/kout/arch/arm64/boot/Image pkg/Image
           ( cd pkg && zip -qr9 "$GITHUB_WORKSPACE/AnyKernel3_BakaSU_35205_6.6.143_adbroot.zip" . )
           ls -lh AnyKernel3_*.zip
           sha256sum AnyKernel3_*.zip | tee sha256.txt
