@@ -599,14 +599,6 @@ jobs:
           wget -qO /tmp/ub_fix.patch "$PATCH_URL" 2>/dev/null && \
             patch -p1 --forward < /tmp/ub_fix.patch || true
           echo "Unicode fix applied"
-      - name: Apply oplus usb power_supply type fix
-        working-directory: kernel_workspace/common
-        run: |
-          wget -qO /tmp/oplus_usb_type.patch \
-            "https://github.com/$GITHUB_REPOSITORY/raw/refs/heads/$GITHUB_REF_NAME/patches/oplus_usb_type_fix.patch"
-          patch -p1 --forward < /tmp/oplus_usb_type.patch
-          grep -q 'POWER_SUPPLY_TYPE_USB;' drivers/power/supply/power_supply_sysfs.c
-          echo "✅ oplus usb type fix applied"
 
       - name: Apply BORE Scheduler
         if: inputs.bore_enable
