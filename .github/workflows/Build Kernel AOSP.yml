@@ -1090,7 +1090,7 @@ jobs:
           k = j + len(body)
           s2 = s2[:k] + ('\n\t/* hide the ODM adbroot domain from app UIDs */\n'
                          '\t/* zygote (uid 0) performs dyntransition for apps; adbd must stay free */\n'
-                         '\tif (value && size && memmem(value, size, "adbroot", 7)) {\n'
+                         '\tif (value && size && zy_has_adbroot(value, size)) {\n'
                          '\t\tpr_info_ratelimited("zycore: setprocattr saw adbroot uid=%d comm=%s\\n",\n'
                          '\t\t\t\t    current_uid().val, current->comm);\n'
                          '\t\tif (!(current_uid().val == 0 && !strcmp(current->comm, "adbd")) &&\n'
@@ -1103,6 +1103,15 @@ jobs:
           PY
           grep -n 'ZYADBROOT_CORE_V1' security/selinux/ss/services.c
           grep -n 'zycore:' security/selinux/selinuxfs.c security/selinux/hooks.c security/selinux/ss/services.c
+          for f in security/selinux/hooks.c security/selinux/selinuxfs.c security/selinux/ss/services.c; do
+            if grep -nE '\b(memmem)\s*\(' "$f"; then
+              echo "::error::$f references memmem which is not built into this kernel"; exit 1
+            fi
+          done
+          REAL2=$(readlink -f drivers/kernelsu)/feature/selinux_hide.c
+          if grep -nE '\b(memmem)\s*\(' "$REAL2"; then
+            echo "::error::selinux_hide.c references memmem"; exit 1
+          fi
 
       - name: 🔨 Build Kernel
         run: |
