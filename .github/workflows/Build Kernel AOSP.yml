@@ -518,6 +518,24 @@ jobs:
           a2 = '    char *scon = NULL, *tcon = NULL;'
           assert a2 in s, 'access anchor missing'
           s = s.replace(a2, guard + a2, 1)
+
+          # setprocattr 通道: SUSFS 的 handle_selinux_setprocattr 对 app 直接走
+          # my_setprocattr(= ksu_handle_selinux_setprocattr)，完全绕过 selinux_setprocattr，
+          # 所以必须在这里也拦一刀
+          a3 = ('    struct ksu_task_security_struct *tsec;\n'
+                '    struct cred *new;\n'
+                '    u32 mysid = current_sid(), sid = 0, tmp_sid, ptsid;')
+          assert a3 in s, 'setprocattr anchor missing'
+          setcon_guard = ("    /* zycore: hide adbroot from app setcon; adbd keeps adb root working */\n"
+                          "    if (name && !strcmp(name, \"current\") &&\n"
+                          "        value && size && ksu_hide_zy_adbroot(value, size) &&\n"
+                          "        !(current_uid().val == 0 && !strcmp(current->comm, \"adbd\")) &&\n"
+                          "        current_uid().val != 2000) {\n"
+                          "        pr_info_ratelimited(\"zycore: ksu setcon hid adbroot uid=%d comm=%s\\\\n\",\n"
+                          "                            ksu_get_uid_t(current_uid()), current->comm);\n"
+                          "        return -EINVAL;\n"
+                          "    }\n\n")
+          s = s.replace(a3, setcon_guard + a3, 1)
           p.write_text(s)
           print('KSU_INJECT_OK', real)
           PY
