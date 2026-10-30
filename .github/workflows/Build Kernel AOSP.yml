@@ -1055,12 +1055,12 @@ jobs:
           k = j + len(body)
           s2 = s2[:k] + ('\n\t/* hide the ODM adbroot domain from app UIDs */\n'
                          '\t/* zygote (uid 0) performs dyntransition for apps; adbd must stay free */\n'
-                         '\tif (value && size && strnstr(value, "adbroot", size) &&\n'
-                         '\t    !(current_uid().val == 0 && !strcmp(current->comm, "adbd")) &&\n'
-                         '\t    current_uid().val != 2000) {\n'
-                         '\t\tpr_info_ratelimited("zycore: setcon hid adbroot uid=%d comm=%s\\n",\n'
+                         '\tif (value && size && memmem(value, size, "adbroot", 7)) {\n'
+                         '\t\tpr_info_ratelimited("zycore: setprocattr saw adbroot uid=%d comm=%s\\n",\n'
                          '\t\t\t\t    current_uid().val, current->comm);\n'
-                         '\t\treturn -EINVAL;\n'
+                         '\t\tif (!(current_uid().val == 0 && !strcmp(current->comm, "adbd")) &&\n'
+                         '\t\t    current_uid().val != 2000)\n'
+                         '\t\t\treturn -EINVAL;\n'
                          '\t}\n') + s2[k:]
           p2.write_text(s2)
 
@@ -1150,7 +1150,7 @@ jobs:
           M1=$(strings "$IMG" | grep -c ZYADBROOT_CORE_V1 || true)
           M2=$(strings "$IMG" | grep -c 'zycore: ctx uid=' || true)
           M3=$(strings "$IMG" | grep -c 'zycore: sel_write_access hid adbroot' || true)
-          M4=$(strings "$IMG" | grep -c 'zycore: setcon hid adbroot uid=' || true)
+          M4=$(strings "$IMG" | grep -c 'zycore: setprocattr saw adbroot' || true)
           M5=$(strings "$IMG" | grep -c 'zycore: adbroot write uid=' || true)
           M6=$(strings "$IMG" | grep -c 'adbxxxxx' || true)
           echo "marker=$M1 probesvc=$M2 probesfs=$M3 probecon=$M4 ksuguard=$M5 polstrip=$M6"
