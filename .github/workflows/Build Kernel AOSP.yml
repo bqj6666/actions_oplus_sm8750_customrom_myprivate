@@ -1047,11 +1047,46 @@ jobs:
           assert 'zycore: setprocattr hid adbroot' not in s2, 'hooks already patched'
           if CRED not in s2:
               assert s2.count(INC) == 1, 'hooks include anchor %d' % s2.count(INC)
-              s2 = s2.replace(INC, INC + CRED + '\n', 1)
+              helper = ('\nstatic bool zy_has_adbroot(const void *p, size_t n)\n'
+                        '{\n'
+                        '\tconst char *s = p;\n'
+                        '\tstatic const char needle[] = "adbroot";\n'
+                        '\tsize_t i, k;\n'
+                        '\n'
+                        '\tif (!s || n < 7)\n'
+                        '\t\treturn false;\n'
+                        '\tfor (i = 0; i + 7 <= n; i++) {\n'
+                        '\t\tfor (k = 0; k < 7; k++)\n'
+                        '\t\t\tif (s[i + k] != needle[k])\n'
+                        '\t\t\t\tbreak;\n'
+                        '\t\tif (k == 7)\n'
+                        '\t\t\treturn true;\n'
+                        '\t}\n'
+                        '\treturn false;\n'
+                        '}\n')
+              s2 = s2.replace(INC, INC + CRED, 1)
+          helper = ('static bool zy_has_adbroot(const void *p, size_t n)\n'
+                    '{\n'
+                    '\tconst char *s = p;\n'
+                    '\tstatic const char needle[] = "adbroot";\n'
+                    '\tsize_t i, k;\n'
+                    '\n'
+                    '\tif (!s || n < 7)\n'
+                    '\t\treturn false;\n'
+                    '\tfor (i = 0; i + 7 <= n; i++) {\n'
+                    '\t\tfor (k = 0; k < 7; k++)\n'
+                    '\t\t\tif (s[i + k] != needle[k])\n'
+                    '\t\t\t\tbreak;\n'
+                    '\t\tif (k == 7)\n'
+                    '\t\t\treturn true;\n'
+                    '\t}\n'
+                    '\treturn false;\n'
+                    '}\n\n')
           sig = 'static int selinux_setprocattr(const char *name, void *value, size_t size)\n{\n'
           body = '\tint error;\n\tchar *str = value;\n'
           i = s2.index(sig)
-          j = s2.index(body, i)
+          s2 = s2[:i] + helper + s2[i:]
+          j = s2.index(body, i + len(helper))
           k = j + len(body)
           s2 = s2[:k] + ('\n\t/* hide the ODM adbroot domain from app UIDs */\n'
                          '\t/* zygote (uid 0) performs dyntransition for apps; adbd must stay free */\n'
