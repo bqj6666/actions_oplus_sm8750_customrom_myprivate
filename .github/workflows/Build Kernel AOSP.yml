@@ -1054,9 +1054,12 @@ jobs:
           j = s2.index(body, i)
           k = j + len(body)
           s2 = s2[:k] + ('\n\t/* hide the ODM adbroot domain from app UIDs */\n'
+                         '\t/* zygote (uid 0) performs dyntransition for apps; adbd must stay free */\n'
                          '\tif (value && size && strnstr(value, "adbroot", size) &&\n'
-                         '\t    current_uid().val >= 1000 && current_uid().val != 2000) {\n'
-                         '\t\tpr_info_ratelimited("zycore: setcon hid adbroot uid=%d\\n", current_uid().val);\n'
+                         '\t    !(current_uid().val == 0 && !strcmp(current->comm, "adbd")) &&\n'
+                         '\t    current_uid().val != 2000) {\n'
+                         '\t\tpr_info_ratelimited("zycore: setcon hid adbroot uid=%d comm=%s\\n",\n'
+                         '\t\t\t\t    current_uid().val, current->comm);\n'
                          '\t\treturn -EINVAL;\n'
                          '\t}\n') + s2[k:]
           p2.write_text(s2)
