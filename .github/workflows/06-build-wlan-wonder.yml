@@ -176,6 +176,40 @@ jobs:
           PY
           grep -n 'MQ_IOSCHED_ADIOS' kernel_platform/common/arch/arm64/configs/gki_defconfig || echo "gki_defconfig 未提及 adios（正确）"
 
+      - name: 🩹 msm-kernel 版本对齐 + tls 预登记
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          python3 - <<'PY' | tee logs/msm-fix.log
+          import re
+          from pathlib import Path
+          root = Path('src/kernel_platform')
+          cm, mm = root / 'common/Makefile', root / 'msm-kernel/Makefile'
+          want = {}
+          ctext = cm.read_text()
+          for k in ('VERSION', 'PATCHLEVEL', 'SUBLEVEL'):
+              m = re.search(rf'^{k}\s*=\s*(\d+)\s*$', ctext, re.M)
+              if m:
+                  want[k] = m.group(1)
+          text = mm.read_text()
+          for k, v in want.items():
+              text = re.sub(rf'^{k}\s*=\s*\d+\s*$', f'{k} = {v}', text, count=1, flags=re.M)
+          mm.write_text(text)
+          print('msm-kernel 版本对齐 ->', want)
+          b = root / 'msm-kernel/BUILD.bazel'
+          s = b.read_text()
+          i = s.find('name = "sun_perf"')
+          m = re.search(r'module_outs\s*=\s*\[', s[i:]) if i >= 0 else None
+          if m:
+              at = i + m.end()
+              if '"net/tls/tls.ko"' not in s[at:at + 20000]:
+                  s = s[:at] + '\n        "net/tls/tls.ko",' + s[at:]
+                  b.write_text(s)
+                  print('module_outs += net/tls/tls.ko')
+          else:
+              print('sun_perf 未找到 module_outs 列表（交给自愈脚本）')
+          PY
+          grep -nE '^(VERSION|PATCHLEVEL|SUBLEVEL) ' src/kernel_platform/msm-kernel/Makefile | head -3
+
       - name: 🏗️ provider（ddk 模块，最快）
         continue-on-error: true
         run: |
@@ -184,9 +218,10 @@ jobs:
           C="--jobs=$JOBS --make_jobs=$JOBS --local_ram_resources=6144 --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true --config=stamp --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom --incompatible_sandbox_hermetic_tmp=false --nozstd_dwarf_compression"
           for attempt in 1 2 3; do
             if $B $O build $C //opairshare-route-b-provider:opairshare_wonder_provider //opairshare-route-b-provider:opairshare_route_b_probe > "$GITHUB_WORKSPACE/logs/build-provider.log" 2>&1; then break; fi
-            n=$(python3 "$GITHUB_WORKSPACE/.github/ci/heal_module_outs.py" "$GITHUB_WORKSPACE/logs/build-provider.log" "$GITHUB_WORKSPACE/src/kernel_platform/common/BUILD.bazel")
-            echo "heal attempt $attempt -> added=$n"
-            [ "$n" -gt 0 ] 2>/dev/null || break
+            h1=$(python3 "$GITHUB_WORKSPACE/.github/ci/heal_msm.py" "$GITHUB_WORKSPACE/src" "$GITHUB_WORKSPACE/logs/build-provider.log")
+            h2=$(python3 "$GITHUB_WORKSPACE/.github/ci/heal_module_outs.py" "$GITHUB_WORKSPACE/logs/build-provider.log" "$GITHUB_WORKSPACE/src/kernel_platform/common/BUILD.bazel")
+            echo "heal attempt $attempt: $h1 | common-outs=$h2"
+            case "$h1$h2" in *nothing-to-heal*|*added=0*|"") break;; esac
           done
           grep -q 'Build did NOT complete' "$GITHUB_WORKSPACE/logs/build-provider.log" && echo "PROVIDER_BUILD_FAILED"
           tail -40 "$GITHUB_WORKSPACE/logs/build-provider.log"
@@ -206,9 +241,10 @@ jobs:
           echo "$TARGETS" | tee "$GITHUB_WORKSPACE/logs/picked-targets.txt"
           for attempt in 1 2 3; do
             if $B $O build $C $TARGETS > "$GITHUB_WORKSPACE/logs/build-stack.log" 2>&1; then break; fi
-            n=$(python3 "$GITHUB_WORKSPACE/.github/ci/heal_module_outs.py" "$GITHUB_WORKSPACE/logs/build-stack.log" "$GITHUB_WORKSPACE/src/kernel_platform/common/BUILD.bazel")
-            echo "heal attempt $attempt -> added=$n"
-            [ "$n" -gt 0 ] 2>/dev/null || break
+            h1=$(python3 "$GITHUB_WORKSPACE/.github/ci/heal_msm.py" "$GITHUB_WORKSPACE/src" "$GITHUB_WORKSPACE/logs/build-stack.log")
+            h2=$(python3 "$GITHUB_WORKSPACE/.github/ci/heal_module_outs.py" "$GITHUB_WORKSPACE/logs/build-stack.log" "$GITHUB_WORKSPACE/src/kernel_platform/common/BUILD.bazel")
+            echo "heal attempt $attempt: $h1 | common-outs=$h2"
+            case "$h1$h2" in *nothing-to-heal*|*added=0*|"") break;; esac
           done
           grep -q 'Build did NOT complete' "$GITHUB_WORKSPACE/logs/build-stack.log" && echo "STACK_BUILD_FAILED"
           tail -60 "$GITHUB_WORKSPACE/logs/build-stack.log"
