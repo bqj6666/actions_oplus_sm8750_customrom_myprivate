@@ -18,6 +18,10 @@ on:
       jobs:
         description: 'bazel jobs'
         default: '2'
+      skip_qca:
+        description: '只编到平台栈为止（排错用）'
+        type: boolean
+        default: false
   push:
     paths:
       - '.github/workflows/06-build-wlan-wonder.yml'
@@ -31,6 +35,7 @@ env:
   COMMON_BRANCH: ${{ inputs.common_branch || '6.6.143_oneplus13_coloros16' }}
   OVERLAY: ${{ github.event_name == 'workflow_dispatch' && inputs.overlay == false && 'false' || 'true' }}
   JOBS: ${{ inputs.jobs || '2' }}
+  SKIP_QCA: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_qca == true && 'true' || 'false' }}
 
 jobs:
   build:
@@ -149,7 +154,8 @@ jobs:
           cd src/kernel_platform
           B=./tools/bazel; O="--output_user_root=$GITHUB_WORKSPACE/bazel-cache"
           C="--jobs=$JOBS --make_jobs=$JOBS --local_ram_resources=6144 --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true --config=stamp --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom --incompatible_sandbox_hermetic_tmp=false --nozstd_dwarf_compression"
-          $B $O build $C //opairshare-route-b-provider:opairshare_wonder_provider //opairshare-route-b-provider:opairshare_route_b_probe 2>&1 | tail -40 | tee "$GITHUB_WORKSPACE/logs/build-provider.log"
+          $B $O build $C //opairshare-route-b-provider:opairshare_wonder_provider //opairshare-route-b-provider:opairshare_route_b_probe > "$GITHUB_WORKSPACE/logs/build-provider.log" 2>&1 || echo "PROVIDER_BUILD_FAILED"
+          tail -40 "$GITHUB_WORKSPACE/logs/build-provider.log"
 
       - name: 🏗️ 平台栈（cfg80211 / mac80211 / cnss*）
         continue-on-error: true
@@ -164,7 +170,8 @@ jobs:
           TARGETS="//msm-kernel:sun_perf/cfg80211.ko //msm-kernel:sun_perf/mac80211.ko"
           for t in $(grep -oE '^//[^ ]*cnss[^ ]*\.ko' "$GITHUB_WORKSPACE/logs/cnss-targets.txt" | sort -u); do TARGETS="$TARGETS $t"; done
           echo "$TARGETS" | tee "$GITHUB_WORKSPACE/logs/picked-targets.txt"
-          $B $O build $C $TARGETS 2>&1 | tail -40 | tee "$GITHUB_WORKSPACE/logs/build-stack.log"
+          $B $O build $C $TARGETS > "$GITHUB_WORKSPACE/logs/build-stack.log" 2>&1 || echo "STACK_BUILD_FAILED"
+          tail -60 "$GITHUB_WORKSPACE/logs/build-stack.log"
 
       - name: 🏗️ wonder + oplus wifi 模块图
         if: env.OVERLAY == 'true'
@@ -172,9 +179,11 @@ jobs:
         run: |
           cd src/kernel_platform
           bash oplus/build/oplus_build_module.sh sun perf vendor/oplus/kernel/wifi \
-            2>&1 | tail -60 | tee "$GITHUB_WORKSPACE/logs/build-wonder.log"
+            > "$GITHUB_WORKSPACE/logs/build-wonder.log" 2>&1 || echo "WONDER_BUILD_FAILED"
+          tail -60 "$GITHUB_WORKSPACE/logs/build-wonder.log"
 
       - name: 🏗️ qca_cld3（含 passthru 覆盖层）
+        if: env.SKIP_QCA != 'true'
         continue-on-error: true
         run: |
           cd src/kernel_platform
@@ -182,12 +191,14 @@ jobs:
           C="--jobs=$JOBS --make_jobs=$JOBS --local_ram_resources=6144 --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true --config=stamp --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom --incompatible_sandbox_hermetic_tmp=false --nozstd_dwarf_compression"
           mkdir -p "$GITHUB_WORKSPACE/dist"
           $B $O run $C //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist \
-            -- --dist_dir="$GITHUB_WORKSPACE/dist" 2>&1 | tail -30 | tee "$GITHUB_WORKSPACE/logs/build-qca.log"
+            -- --dist_dir="$GITHUB_WORKSPACE/dist" > "$GITHUB_WORKSPACE/logs/build-qca.log" 2>&1 || echo "QCA_BUILD_FAILED"
+          tail -40 "$GITHUB_WORKSPACE/logs/build-qca.log"
 
       - name: 📦 收集（.ko + symvers）
         if: always()
         run: |
           set -x
+          set +e
           D="$GITHUB_WORKSPACE/dist"; mkdir -p "$D" "$GITHUB_WORKSPACE/symvers"
           for n in cfg80211 mac80211 cnss2 cnss_utils cnss_prealloc wlan_firmware_service \
                    qca_cld3_peach_v2 wonder opairshare_wonder_provider opairshare_route_b_probe; do
