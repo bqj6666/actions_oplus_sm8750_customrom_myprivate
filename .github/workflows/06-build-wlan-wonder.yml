@@ -28,6 +28,9 @@ permissions:
 env:
   COMMON_OWNER: palazik
   COMMON_REPO: android_kernel_common_oneplus_sm8750
+  COMMON_BRANCH: ${{ inputs.common_branch || '6.6.143_oneplus13_coloros16' }}
+  OVERLAY: ${{ inputs.overlay == false && 'false' || 'true' }}
+  JOBS: ${{ inputs.jobs || '2' }}
 
 jobs:
   build:
@@ -69,7 +72,7 @@ jobs:
             <remote fetch="https://github.com/${COMMON_OWNER}" name="palazik" />
             <remove-project name="${COMMON_REPO}" />
             <project remote="palazik" name="${COMMON_REPO}" path="kernel_platform/common"
-                     revision="${{ inputs.common_branch }}" />
+                     revision="$COMMON_BRANCH" />
           </manifest>
           XML
           cat .repo/local_manifests/opa-common.xml | tee "$GITHUB_WORKSPACE/logs/local-manifest.xml"
@@ -88,7 +91,7 @@ jobs:
           [ -e build/abl_extensions.bzl ] || ln -sfn ../bootable/bootloader/edk2/abl_extensions.bzl build/abl_extensions.bzl 2>/dev/null || true
 
       - name: 🩹 覆盖层 + 补丁
-        if: inputs.overlay
+        if: env.OVERLAY == 'true'
         run: |
           cd "$GITHUB_WORKSPACE"
           python3 - <<'PY' 2>&1 | tee logs/overlay.log
@@ -123,7 +126,7 @@ jobs:
           grep -c wonder vendor/oplus/kernel/wifi/oplus_local_modules.bzl | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
 
       - name: ⚙️ 打开 PASSTHRU / WONDER
-        if: inputs.overlay
+        if: env.OVERLAY == 'true'
         run: |
           cd src
           CFG=vendor/qcom/opensource/wlan/qcacld-3.0/configs/sun_gki_peach-v2_defconfig
@@ -145,7 +148,7 @@ jobs:
         run: |
           cd src/kernel_platform
           B=./tools/bazel; O="--output_user_root=$GITHUB_WORKSPACE/bazel-cache"
-          C="--jobs=${{ inputs.jobs }} --make_jobs=${{ inputs.jobs }} --local_ram_resources=6144 --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true --config=stamp --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom --incompatible_sandbox_hermetic_tmp=false --nozstd_dwarf_compression"
+          C="--jobs=$JOBS --make_jobs=$JOBS --local_ram_resources=6144 --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true --config=stamp --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom --incompatible_sandbox_hermetic_tmp=false --nozstd_dwarf_compression"
           $B $O build $C //opairshare-route-b-provider:opairshare_wonder_provider //opairshare-route-b-provider:opairshare_route_b_probe 2>&1 | tail -40 | tee "$GITHUB_WORKSPACE/logs/build-provider.log"
 
       - name: 🏗️ 平台栈（cfg80211 / mac80211 / cnss*）
@@ -153,7 +156,7 @@ jobs:
         run: |
           cd src/kernel_platform
           B=./tools/bazel; O="--output_user_root=$GITHUB_WORKSPACE/bazel-cache"
-          C="--jobs=${{ inputs.jobs }} --make_jobs=${{ inputs.jobs }} --local_ram_resources=6144 --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true --config=stamp --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom --incompatible_sandbox_hermetic_tmp=false --nozstd_dwarf_compression"
+          C="--jobs=$JOBS --make_jobs=$JOBS --local_ram_resources=6144 --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true --config=stamp --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom --incompatible_sandbox_hermetic_tmp=false --nozstd_dwarf_compression"
           {
             echo "## cnss 目标探测"
             $B $O query '//vendor/qcom/opensource/wlan/...' 2>/dev/null | grep -iE 'cnss[^/]*\.ko$' | head -20
@@ -164,7 +167,7 @@ jobs:
           $B $O build $C $TARGETS 2>&1 | tail -40 | tee "$GITHUB_WORKSPACE/logs/build-stack.log"
 
       - name: 🏗️ wonder + oplus wifi 模块图
-        if: inputs.overlay
+        if: env.OVERLAY == 'true'
         continue-on-error: true
         run: |
           cd src/kernel_platform
@@ -176,7 +179,7 @@ jobs:
         run: |
           cd src/kernel_platform
           B=./tools/bazel; O="--output_user_root=$GITHUB_WORKSPACE/bazel-cache"
-          C="--jobs=${{ inputs.jobs }} --make_jobs=${{ inputs.jobs }} --local_ram_resources=6144 --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true --config=stamp --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom --incompatible_sandbox_hermetic_tmp=false --nozstd_dwarf_compression"
+          C="--jobs=$JOBS --make_jobs=$JOBS --local_ram_resources=6144 --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true --config=stamp --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom --incompatible_sandbox_hermetic_tmp=false --nozstd_dwarf_compression"
           mkdir -p "$GITHUB_WORKSPACE/dist"
           $B $O run $C //vendor/qcom/opensource/wlan/qcacld-3.0:sun_perf_peach-v2_modules_dist \
             -- --dist_dir="$GITHUB_WORKSPACE/dist" 2>&1 | tail -30 | tee "$GITHUB_WORKSPACE/logs/build-qca.log"
@@ -214,8 +217,8 @@ jobs:
           zip -qr9 "wlan-wonder-${GITHUB_RUN_ID}.zip" dist symvers logs || true
           TAG="ci-wlan-wonder-${GITHUB_RUN_ID}"
           NOTES="$(head -80 logs/dist.txt 2>/dev/null)
-          common=${{ inputs.common_branch }}
-          overlay=${{ inputs.overlay }}"
+          common=$COMMON_BRANCH
+          overlay=$OVERLAY"
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" \
             --title "WLAN wonder set ${GITHUB_RUN_ID}" --notes "$NOTES" \
             "wlan-wonder-${GITHUB_RUN_ID}.zip" || true
