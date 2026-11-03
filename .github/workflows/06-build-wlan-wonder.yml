@@ -223,18 +223,21 @@ jobs:
           grep -q 'Build did NOT complete' "$GITHUB_WORKSPACE/logs/build-stack.log" && echo "STACK_BUILD_FAILED"
           tail -60 "$GITHUB_WORKSPACE/logs/build-stack.log"
 
-      - name: 🏗️ wonder（oplus wifi 模块图，从树根运行）
+      - name: 🏗️ wonder（独立 ddk_module 包）
         if: env.OVERLAY == 'true'
         continue-on-error: true
         run: |
-          cd "$GITHUB_WORKSPACE/src"
-          {
-            echo "== 可用 target =="
-            ( cd kernel_platform && ./tools/bazel --output_user_root="$GITHUB_WORKSPACE/bazel-cache" \
-              query 'kind("ddk_module", //vendor/oplus/kernel/wifi:*)' 2>&1 | head -40 )
-          } | tee "$GITHUB_WORKSPACE/logs/wonder-targets.txt"
-          bash kernel_platform/oplus/build/oplus_build_module.sh sun perf vendor/oplus/kernel/wifi \
-            > "$GITHUB_WORKSPACE/logs/build-wonder.log" 2>&1 || echo "WONDER_BUILD_FAILED"
+          cd "$GITHUB_WORKSPACE"
+          D=src/kernel_platform/opairshare-wonder
+          rm -rf "$D" && mkdir -p "$D"
+          cp -a opa/kernel/wonder/. "$D"/
+          rm -f "$D/Makefile" "$D/Kbuild" "$D/Makefile.include" "$D/Kconfig"
+          cp .github/ci/wonder.BUILD.bazel "$D/BUILD.bazel"
+          ls "$D" | head -20 | tee logs/wonder-src.txt
+          cd src/kernel_platform
+          B=./tools/bazel; O="--output_user_root=$GITHUB_WORKSPACE/bazel-cache"
+          C="--jobs=$JOBS --make_jobs=$JOBS --local_ram_resources=6144 --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true --config=stamp --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom --incompatible_sandbox_hermetic_tmp=false --nozstd_dwarf_compression"
+          $B $O build $C //opairshare-wonder:wonder > "$GITHUB_WORKSPACE/logs/build-wonder.log" 2>&1 || echo "WONDER_BUILD_FAILED"
           tail -40 "$GITHUB_WORKSPACE/logs/build-wonder.log"
 
       - name: 🏗️ qca_cld3（含 passthru 覆盖层）
@@ -273,6 +276,19 @@ jobs:
           done | tee "$GITHUB_WORKSPACE/logs/dist.txt"
           ls -l "$D" | tee -a "$GITHUB_WORKSPACE/logs/dist.txt"
           ls -l "$GITHUB_WORKSPACE/symvers" | head -20 | tee -a "$GITHUB_WORKSPACE/logs/dist.txt"
+
+      - name: ✅ 判定（缺件就把 run 标红）
+        if: always()
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          miss=""
+          for n in cfg80211 mac80211 cnss2 qca_cld3_peach_v2 oneplus13_wonder_provider wonder; do
+            if ls dist 2>/dev/null | grep -qx "$n.ko"; then echo "OK   $n.ko"; else echo "MISS $n.ko"; miss="$miss $n"; fi
+          done
+          for f in logs/build-stack.log logs/build-qca.log logs/build-provider.log logs/build-wonder.log; do
+            grep -q 'Build did NOT complete' "$f" 2>/dev/null && echo "FAILED-BUILD $f"
+          done
+          [ -z "$miss" ] || { echo "缺少模块:$miss"; exit 1; }
 
       - name: 🚀 Release
         if: always()

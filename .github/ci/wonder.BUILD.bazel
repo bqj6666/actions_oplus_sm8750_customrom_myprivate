@@ -1,0 +1,34 @@
+load("//build/kernel/kleaf:kernel.bzl", "ddk_module")
+
+# OPAirDrop Wonder（AWDL）模块，独立于 vendor/oplus/kernel/wifi 的 oplus 模块图，
+# 避免那里 ddk_config 重名（oplus_connectivity_routerboost_config）的问题。
+ddk_module(
+    name = "wonder",
+    srcs = [
+        "main.c",
+        "mac80211.c",
+        "mac80211_txs.c",
+        "wondertap.c",
+        "nl80211_ven_cmd.c",
+        "ssr.c",
+        "band_config.c",
+        "core.h",
+        "mac80211.h",
+        "mac80211_txs.h",
+        "nl80211_ven_cmd.h",
+        "reg.h",
+        "ssr.h",
+        "wonder_log.h",
+        "wondertap_internal.h",
+    ] + glob(["include/**/*.h"]),
+    out = "wonder.ko",
+    kernel_build = "//msm-kernel:sun_perf",
+    deps = ["//msm-kernel:all_headers"],
+    includes = ["."],
+    copts = [
+        "-DCONFIG_WONDER_SUPPORT=1",
+        "-DCONFIG_WONDER_RX_FILTER_SUPPORT=1",
+        "-DCONFIG_WONDER_SYNA_SUPPORT=1",
+        "-Wno-error",
+    ],
+)
