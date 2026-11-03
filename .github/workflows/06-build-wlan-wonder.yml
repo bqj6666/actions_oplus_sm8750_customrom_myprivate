@@ -29,7 +29,7 @@ env:
   COMMON_OWNER: palazik
   COMMON_REPO: android_kernel_common_oneplus_sm8750
   COMMON_BRANCH: ${{ inputs.common_branch || '6.6.143_oneplus13_coloros16' }}
-  OVERLAY: ${{ inputs.overlay == false && 'false' || 'true' }}
+  OVERLAY: ${{ github.event_name == 'workflow_dispatch' && inputs.overlay == false && 'false' || 'true' }}
   JOBS: ${{ inputs.jobs || '2' }}
 
 jobs:
