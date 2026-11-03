@@ -25,6 +25,7 @@ typedef struct wondertap_init_params qdf_wondertap_init_params_t;
 typedef struct wondertap_deinit_params qdf_wondertap_deinit_params_t;
 typedef struct wondertap_priv qdf_wondertap_priv_t;
 typedef struct wondertap_ops qdf_wondertap_ops_t;
+typedef struct wonder_txd qdf_wonder_txd_t;
 """
 
 

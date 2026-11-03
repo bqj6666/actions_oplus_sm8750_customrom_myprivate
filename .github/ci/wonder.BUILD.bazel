@@ -6,6 +6,7 @@ ddk_module(
     name = "wonder",
     srcs = [
         "main.c",
+        "debugfs.c",
         "mac80211.c",
         "mac80211_txs.c",
         "wondertap.c",
