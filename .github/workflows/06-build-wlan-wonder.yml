@@ -116,6 +116,9 @@ jobs:
           m = json.load(open(os.path.join(opa, 'kernel/source-map.json')))
           missing = 0
           for src, meta in m.items():
+              if 'kernel_path' not in meta:
+                  print('SKIP meta', src)
+                  continue
               dst = os.path.join(root, meta['kernel_path'])
               if not os.path.exists(dst):
                   missing += 1
@@ -149,26 +152,16 @@ jobs:
           PY
           grep -nE "PASSTHRU|WONDER" "$CFG" | tee "$GITHUB_WORKSPACE/logs/defconfig.tail"
 
-      - name: 🩹 Kleaf module_outs 自愈（预热 adios）
+      - name: 🩹 adios 改 builtin（Kleaf 这个版本不接受 module_outs）
         run: |
-          python3 - "$GITHUB_WORKSPACE/src/kernel_platform/common/BUILD.bazel" <<'PY'
-          import re, sys
-          p = sys.argv[1]
-          s = open(p).read()
-          key = '"kernel_aarch64": {'
-          i = s.find(key)
-          if i < 0:
-              print('kernel_aarch64 not found'); raise SystemExit(0)
-          if re.search(r'"module_outs": \[[^\]]*\]', s[i:i + 6000]):
-              print('module_outs already present')
-          else:
-              j = s.find('"module_implicit_outs"', i)
-              if j < 0:
-                  print('module_implicit_outs not found'); raise SystemExit(0)
-              s = s[:j] + '"module_outs": [\n            "block/adios.ko",\n        ],\n        ' + s[j:]
-              open(p, 'w').write(s)
-              print('inserted module_outs with block/adios.ko')
-          PY
+          cd "$GITHUB_WORKSPACE/src"
+          echo "== 改前 ==" | tee "$GITHUB_WORKSPACE/logs/adios.log"
+          grep -rl 'CONFIG_ADIOS=m' --include='*config*' --include='*.config' . 2>/dev/null | tee -a "$GITHUB_WORKSPACE/logs/adios.log"
+          grep -rl 'CONFIG_ADIOS=m' --include='*config*' --include='*.config' . 2>/dev/null | while read -r f; do
+            sed -i 's/^CONFIG_ADIOS=m$/CONFIG_ADIOS=y/' "$f"
+          done
+          echo "== 改后残留 ==" | tee -a "$GITHUB_WORKSPACE/logs/adios.log"
+          grep -rc 'CONFIG_ADIOS' --include='*config*' --include='*.config' . 2>/dev/null | grep -v ':0$' | tee -a "$GITHUB_WORKSPACE/logs/adios.log"
 
       - name: 🏗️ provider（ddk 模块，最快）
         continue-on-error: true
@@ -207,14 +200,19 @@ jobs:
           grep -q 'Build did NOT complete' "$GITHUB_WORKSPACE/logs/build-stack.log" && echo "STACK_BUILD_FAILED"
           tail -60 "$GITHUB_WORKSPACE/logs/build-stack.log"
 
-      - name: 🏗️ wonder + oplus wifi 模块图
+      - name: 🏗️ wonder（oplus wifi 模块图，从树根运行）
         if: env.OVERLAY == 'true'
         continue-on-error: true
         run: |
-          cd src/kernel_platform
-          bash oplus/build/oplus_build_module.sh sun perf vendor/oplus/kernel/wifi \
+          cd "$GITHUB_WORKSPACE/src"
+          {
+            echo "== 可用 target =="
+            ./kernel_platform/tools/bazel --output_user_root="$GITHUB_WORKSPACE/bazel-cache" \
+              query 'kind("ddk_module", //vendor/oplus/kernel/wifi:*)' 2>&1 | head -40
+          } | tee "$GITHUB_WORKSPACE/logs/wonder-targets.txt"
+          bash kernel_platform/oplus/build/oplus_build_module.sh sun perf vendor/oplus/kernel/wifi \
             > "$GITHUB_WORKSPACE/logs/build-wonder.log" 2>&1 || echo "WONDER_BUILD_FAILED"
-          tail -60 "$GITHUB_WORKSPACE/logs/build-wonder.log"
+          tail -40 "$GITHUB_WORKSPACE/logs/build-wonder.log"
 
       - name: 🏗️ qca_cld3（含 passthru 覆盖层）
         if: env.SKIP_QCA != 'true'
