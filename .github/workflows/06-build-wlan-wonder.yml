@@ -148,13 +148,38 @@ jobs:
           PY
           grep -nE "PASSTHRU|WONDER" "$CFG" | tee "$GITHUB_WORKSPACE/logs/defconfig.tail"
 
+      - name: 🩹 Kleaf module_outs 自愈（adios 等未登记模块）
+        run: |
+          python3 "$GITHUB_WORKSPACE/.github/ci/heal_module_outs.py" "$GITHUB_WORKSPACE/logs/none.log" \
+                  "$GITHUB_WORKSPACE/src/kernel_platform/common/BUILD.bazel" || true
+          python3 - "$GITHUB_WORKSPACE/src/kernel_platform/common/BUILD.bazel" <<'PY'
+          import sys
+          p = sys.argv[1]
+          s = open(p).read()
+          i = s.find('name = "kernel_aarch64"')
+          m = s.find('module_outs = [', i if i >= 0 else 0)
+          if m >= 0 and '"block/adios.ko"' not in s[m:m + 8000]:
+              k = m + len('module_outs = [')
+              s = s[:k] + '\n        "block/adios.ko",' + s[k:]
+              open(p, 'w').write(s)
+              print('inserted block/adios.ko')
+          else:
+              print('module_outs untouched')
+          PY
+
       - name: 🏗️ provider（ddk 模块，最快）
         continue-on-error: true
         run: |
           cd src/kernel_platform
           B=./tools/bazel; O="--output_user_root=$GITHUB_WORKSPACE/bazel-cache"
           C="--jobs=$JOBS --make_jobs=$JOBS --local_ram_resources=6144 --//msm-kernel:skip_abi=true --//msm-kernel:skip_abl=true --config=stamp --user_kmi_symbol_lists=//msm-kernel:android/abi_gki_aarch64_qcom --incompatible_sandbox_hermetic_tmp=false --nozstd_dwarf_compression"
-          $B $O build $C //opairshare-route-b-provider:opairshare_wonder_provider //opairshare-route-b-provider:opairshare_route_b_probe > "$GITHUB_WORKSPACE/logs/build-provider.log" 2>&1 || echo "PROVIDER_BUILD_FAILED"
+          for attempt in 1 2 3; do
+            if $B $O build $C //opairshare-route-b-provider:opairshare_wonder_provider //opairshare-route-b-provider:opairshare_route_b_probe > "$GITHUB_WORKSPACE/logs/build-provider.log" 2>&1; then break; fi
+            n=$(python3 "$GITHUB_WORKSPACE/.github/ci/heal_module_outs.py" "$GITHUB_WORKSPACE/logs/build-provider.log" "$GITHUB_WORKSPACE/src/kernel_platform/common/BUILD.bazel")
+            echo "heal attempt $attempt -> added=$n"
+            [ "$n" -gt 0 ] 2>/dev/null || break
+          done
+          grep -q 'Build did NOT complete' "$GITHUB_WORKSPACE/logs/build-provider.log" && echo "PROVIDER_BUILD_FAILED"
           tail -40 "$GITHUB_WORKSPACE/logs/build-provider.log"
 
       - name: 🏗️ 平台栈（cfg80211 / mac80211 / cnss*）
@@ -170,7 +195,13 @@ jobs:
           TARGETS="//msm-kernel:sun_perf/cfg80211.ko //msm-kernel:sun_perf/mac80211.ko"
           for t in $(grep -oE '^//[^ ]*cnss[^ ]*\.ko' "$GITHUB_WORKSPACE/logs/cnss-targets.txt" | sort -u); do TARGETS="$TARGETS $t"; done
           echo "$TARGETS" | tee "$GITHUB_WORKSPACE/logs/picked-targets.txt"
-          $B $O build $C $TARGETS > "$GITHUB_WORKSPACE/logs/build-stack.log" 2>&1 || echo "STACK_BUILD_FAILED"
+          for attempt in 1 2 3; do
+            if $B $O build $C $TARGETS > "$GITHUB_WORKSPACE/logs/build-stack.log" 2>&1; then break; fi
+            n=$(python3 "$GITHUB_WORKSPACE/.github/ci/heal_module_outs.py" "$GITHUB_WORKSPACE/logs/build-stack.log" "$GITHUB_WORKSPACE/src/kernel_platform/common/BUILD.bazel")
+            echo "heal attempt $attempt -> added=$n"
+            [ "$n" -gt 0 ] 2>/dev/null || break
+          done
+          grep -q 'Build did NOT complete' "$GITHUB_WORKSPACE/logs/build-stack.log" && echo "STACK_BUILD_FAILED"
           tail -60 "$GITHUB_WORKSPACE/logs/build-stack.log"
 
       - name: 🏗️ wonder + oplus wifi 模块图
