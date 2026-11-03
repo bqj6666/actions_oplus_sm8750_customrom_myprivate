@@ -155,13 +155,15 @@ jobs:
       - name: 🩹 adios 改 builtin（Kleaf 这个版本不接受 module_outs）
         run: |
           cd "$GITHUB_WORKSPACE/src"
-          echo "== 改前 ==" | tee "$GITHUB_WORKSPACE/logs/adios.log"
-          grep -rl 'CONFIG_ADIOS=m' --include='*config*' --include='*.config' . 2>/dev/null | tee -a "$GITHUB_WORKSPACE/logs/adios.log"
-          grep -rl 'CONFIG_ADIOS=m' --include='*config*' --include='*.config' . 2>/dev/null | while read -r f; do
-            sed -i 's/^CONFIG_ADIOS=m$/CONFIG_ADIOS=y/' "$f"
-          done
-          echo "== 改后残留 ==" | tee -a "$GITHUB_WORKSPACE/logs/adios.log"
-          grep -rc 'CONFIG_ADIOS' --include='*config*' --include='*.config' . 2>/dev/null | grep -v ':0$' | tee -a "$GITHUB_WORKSPACE/logs/adios.log"
+          {
+            echo "== 命中文件 =="
+            grep -rl 'MQ_IOSCHED_ADIOS' . 2>/dev/null | head -20
+            grep -rl 'MQ_IOSCHED_ADIOS' . 2>/dev/null | while read -r f; do
+              sed -i 's/CONFIG_MQ_IOSCHED_ADIOS=m/CONFIG_MQ_IOSCHED_ADIOS=y/g; s/CONFIG_MQ_IOSCHED_DEFAULT_ADIOS=m/CONFIG_MQ_IOSCHED_DEFAULT_ADIOS=y/g' "$f"
+            done
+            echo "== 改后 =="
+            grep -rn 'MQ_IOSCHED_ADIOS' . 2>/dev/null | head -20
+          } | tee "$GITHUB_WORKSPACE/logs/adios.log"
 
       - name: 🏗️ provider（ddk 模块，最快）
         continue-on-error: true
@@ -207,8 +209,8 @@ jobs:
           cd "$GITHUB_WORKSPACE/src"
           {
             echo "== 可用 target =="
-            ./kernel_platform/tools/bazel --output_user_root="$GITHUB_WORKSPACE/bazel-cache" \
-              query 'kind("ddk_module", //vendor/oplus/kernel/wifi:*)' 2>&1 | head -40
+            ( cd kernel_platform && ./tools/bazel --output_user_root="$GITHUB_WORKSPACE/bazel-cache" \
+              query 'kind("ddk_module", //vendor/oplus/kernel/wifi:*)' 2>&1 | head -40 )
           } | tee "$GITHUB_WORKSPACE/logs/wonder-targets.txt"
           bash kernel_platform/oplus/build/oplus_build_module.sh sun perf vendor/oplus/kernel/wifi \
             > "$GITHUB_WORKSPACE/logs/build-wonder.log" 2>&1 || echo "WONDER_BUILD_FAILED"
