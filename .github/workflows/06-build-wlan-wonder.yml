@@ -162,6 +162,13 @@ jobs:
           print('defconfig updated:', p)
           PY
           grep -nE "PASSTHRU|WONDER" "$CFG" | tee "$GITHUB_WORKSPACE/logs/defconfig.tail"
+          # qcacld 的 Kbuild 用 ccflags-$(CONFIG_DRIVER_PASSTHRU_MODE) 控制 -DDRIVER_PASSTHRU_MODE，
+          # Kleaf 走的是 msm-kernel 的 sun_perf.config，所以必须加在那里。
+          KR=arch/arm64/configs/vendor/sun_perf.config
+          for kv in CONFIG_DRIVER_PASSTHRU_MODE=y CONFIG_WONDER_SUPPORT=y CONFIG_WONDER_RX_FILTER_SUPPORT=y; do
+            grep -q "^${kv%%=*}=" "$KR" 2>/dev/null && sed -i "s/^${kv%%=*}=.*/$kv/" "$KR" || echo "$kv" >> "$KR"
+          done
+          grep -nE "PASSTHRU|WONDER" "$KR" | tee -a "$GITHUB_WORKSPACE/logs/defconfig.tail"
 
       - name: 🩹 adios 改 builtin（只动 Kconfig 默认值，不动 defconfig）
         run: |
