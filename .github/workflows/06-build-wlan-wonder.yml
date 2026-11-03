@@ -294,7 +294,7 @@ jobs:
           set -x
           set +e
           D="$GITHUB_WORKSPACE/dist"; mkdir -p "$D" "$GITHUB_WORKSPACE/symvers"
-          for n in cfg80211 mac80211 cnss2 cnss_utils cnss_prealloc wlan_firmware_service \
+          for n in cfg80211 mac80211 cnss2 cnss_plat_ipc_qmi_svc cnss_utils cnss_prealloc wlan_firmware_service \
                    qca_cld3_peach_v2 wonder opairshare_wonder_provider opairshare_route_b_probe; do
             f=$(find -L "$GITHUB_WORKSPACE/src" -name "$n.ko" -not -path '*/.repo/*' 2>/dev/null | head -1)
             if [ -n "$f" ]; then cp -v "$f" "$D/"; else echo "MISSING $n.ko"; fi
@@ -318,7 +318,7 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE"
           miss=""
-          for n in cfg80211 mac80211 cnss2 qca_cld3_peach_v2 oneplus13_wonder_provider wonder; do
+          for n in cfg80211 mac80211 cnss2 cnss_plat_ipc_qmi_svc qca_cld3_peach_v2 oneplus13_wonder_provider wonder; do
             if ls dist 2>/dev/null | grep -qx "$n.ko"; then echo "OK   $n.ko"; else echo "MISS $n.ko"; miss="$miss $n"; fi
           done
           for f in logs/build-stack.log logs/build-qca.log logs/build-provider.log logs/build-wonder.log; do
