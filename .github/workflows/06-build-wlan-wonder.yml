@@ -95,11 +95,21 @@ jobs:
           ln -sfn ../msm-kernel/msm_kernel_extensions.bzl build/msm_kernel_extensions.bzl
           [ -e build/abl_extensions.bzl ] || ln -sfn ../bootable/bootloader/edk2/abl_extensions.bzl build/abl_extensions.bzl 2>/dev/null || true
 
-      - name: 🩹 覆盖层 + 补丁
+      - name: 🩹 补丁 + 覆盖层（先补丁，后覆盖层，覆盖层为准）
         if: env.OVERLAY == 'true'
         run: |
           cd "$GITHUB_WORKSPACE"
-          python3 - <<'PY' 2>&1 | tee logs/overlay.log
+          cd src
+          for p in "$GITHUB_WORKSPACE"/opa/kernel/patches/000[1-7]-*.patch; do
+            case "$p" in *0007-session-dp-candidate.patch) echo "SKIP candidate $(basename "$p")" | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"; continue;; esac
+            if patch -p1 -l --batch --forward < "$p" >> "$GITHUB_WORKSPACE/logs/overlay.log" 2>&1; then
+              echo "APPLIED $(basename "$p")" | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
+            else
+              echo "PATCH-HAD-FAILURES $(basename "$p")（以覆盖层为准）" | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
+            fi
+          done
+          cd "$GITHUB_WORKSPACE"
+          python3 - <<'PY' 2>&1 | tee -a logs/overlay.log
           import json, shutil, os
           opa = os.path.join(os.environ['GITHUB_WORKSPACE'], 'opa')
           root = os.path.join(os.environ['GITHUB_WORKSPACE'], 'src')
@@ -112,23 +122,14 @@ jobs:
                   print('MISS-DST', meta['kernel_path'])
               os.makedirs(os.path.dirname(dst), exist_ok=True)
               shutil.copy2(os.path.join(opa, src), dst)
-          print('copied', len(m), 'files; missing target dirs:', missing)
+          print('copied', len(m), 'overlay files; missing targets:', missing)
           PY
+          rm -rf src/vendor/oplus/kernel/wifi/wonder src/kernel_platform/opairshare-route-b-provider
           cp -a opa/kernel/wonder src/vendor/oplus/kernel/wifi/wonder
-          rm -rf src/kernel_platform/opairshare-route-b-provider
           cp -a opa/kernel/provider src/kernel_platform/opairshare-route-b-provider
-          cd src
-          for p in "$GITHUB_WORKSPACE"/opa/kernel/patches/000[1-7]-*.patch; do
-            case "$p" in *0007-session-dp-candidate.patch) echo "SKIP candidate $(basename "$p")" | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"; continue;; esac
-            if patch -p1 -l --batch --forward --dry-run < "$p" >> "$GITHUB_WORKSPACE/logs/overlay.log" 2>&1; then
-              patch -p1 -l --batch --forward < "$p" >> "$GITHUB_WORKSPACE/logs/overlay.log" 2>&1 && echo "APPLIED $(basename "$p")" | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
-            else
-              echo "SKIPPED(already/failed) $(basename "$p")" | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
-            fi
-          done
-          echo "== 覆盖层关键文件是否就位 ==" | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
-          ls -l vendor/oplus/kernel/wifi/wonder | head -5 | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
-          grep -c wonder vendor/oplus/kernel/wifi/oplus_local_modules.bzl | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
+          echo "== 校验 ==" | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
+          grep -c wonder src/vendor/oplus/kernel/wifi/oplus_local_modules.bzl | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
+          ls src/vendor/oplus/kernel/wifi/wonder | head -3 | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
 
       - name: ⚙️ 打开 PASSTHRU / WONDER
         if: env.OVERLAY == 'true'
@@ -148,23 +149,25 @@ jobs:
           PY
           grep -nE "PASSTHRU|WONDER" "$CFG" | tee "$GITHUB_WORKSPACE/logs/defconfig.tail"
 
-      - name: 🩹 Kleaf module_outs 自愈（adios 等未登记模块）
+      - name: 🩹 Kleaf module_outs 自愈（预热 adios）
         run: |
-          python3 "$GITHUB_WORKSPACE/.github/ci/heal_module_outs.py" "$GITHUB_WORKSPACE/logs/none.log" \
-                  "$GITHUB_WORKSPACE/src/kernel_platform/common/BUILD.bazel" || true
           python3 - "$GITHUB_WORKSPACE/src/kernel_platform/common/BUILD.bazel" <<'PY'
-          import sys
+          import re, sys
           p = sys.argv[1]
           s = open(p).read()
-          i = s.find('name = "kernel_aarch64"')
-          m = s.find('module_outs = [', i if i >= 0 else 0)
-          if m >= 0 and '"block/adios.ko"' not in s[m:m + 8000]:
-              k = m + len('module_outs = [')
-              s = s[:k] + '\n        "block/adios.ko",' + s[k:]
-              open(p, 'w').write(s)
-              print('inserted block/adios.ko')
+          key = '"kernel_aarch64": {'
+          i = s.find(key)
+          if i < 0:
+              print('kernel_aarch64 not found'); raise SystemExit(0)
+          if re.search(r'"module_outs": \[[^\]]*\]', s[i:i + 6000]):
+              print('module_outs already present')
           else:
-              print('module_outs untouched')
+              j = s.find('"module_implicit_outs"', i)
+              if j < 0:
+                  print('module_implicit_outs not found'); raise SystemExit(0)
+              s = s[:j] + '"module_outs": [\n            "block/adios.ko",\n        ],\n        ' + s[j:]
+              open(p, 'w').write(s)
+              print('inserted module_outs with block/adios.ko')
           PY
 
       - name: 🏗️ provider（ddk 模块，最快）
