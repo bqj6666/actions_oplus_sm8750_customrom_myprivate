@@ -42,6 +42,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 320
     steps:
+      - name: 📂 Checkout（供 .github/ci 脚本使用）
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - name: 💾 Free disk
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
@@ -133,6 +138,12 @@ jobs:
           echo "== 校验 ==" | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
           grep -c wonder src/vendor/oplus/kernel/wifi/oplus_local_modules.bzl | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
           ls src/vendor/oplus/kernel/wifi/wonder | head -3 | tee -a "$GITHUB_WORKSPACE/logs/overlay.log"
+
+      - name: 🧩 生成 qdf_wondertap.h（上游漏提交该头）
+        if: env.OVERLAY == 'true'
+        run: |
+          python3 "$GITHUB_WORKSPACE/.github/ci/make_qdf_wondertap.py" "$GITHUB_WORKSPACE/src" \
+            | tee "$GITHUB_WORKSPACE/logs/qdf-wondertap.log"
 
       - name: ⚙️ 打开 PASSTHRU / WONDER
         if: env.OVERLAY == 'true'
