@@ -152,18 +152,17 @@ jobs:
           PY
           grep -nE "PASSTHRU|WONDER" "$CFG" | tee "$GITHUB_WORKSPACE/logs/defconfig.tail"
 
-      - name: 🩹 adios 改 builtin（Kconfig 默认 m → y）
+      - name: 🩹 adios 改 builtin（只动 Kconfig 默认值，不动 defconfig）
         run: |
           cd "$GITHUB_WORKSPACE/src"
           python3 - "$GITHUB_WORKSPACE" <<'PY' | tee "$GITHUB_WORKSPACE/logs/adios.log"
           import re, sys
           from pathlib import Path
-          root = Path(sys.argv[1]) / 'src'
-          kc = root / 'kernel_platform/common/block/Kconfig.iosched'
+          kc = Path(sys.argv[1]) / 'src/kernel_platform/common/block/Kconfig.iosched'
           s = kc.read_text()
           i = s.find('config MQ_IOSCHED_ADIOS')
           print('== 改前 ==')
-          print(s[i:i + 400])
+          print(s[i:i + 200])
           j = s.find('\nconfig ', i + 1)
           block = s[i:j if j > 0 else len(s)]
           nb, n = re.subn(r'(\n[ \t]*default[ \t]+)m([ \t]*\n)', r'\1y\2', block)
@@ -171,20 +170,11 @@ jobs:
               nb = block.replace('config MQ_IOSCHED_ADIOS',
                                  'config MQ_IOSCHED_ADIOS\n\tdefault y', 1)
               n = 1
-          s = s[:i] + nb + s[j if j > 0 else len(s):]
-          kc.write_text(s)
+          kc.write_text(s[:i] + nb + s[j if j > 0 else len(s):])
           print('== 改后（替换 %d 处）==' % n)
-          print(kc.read_text()[i:i + 400])
-          for d in ('kernel_platform/common/arch/arm64/configs/gki_defconfig',):
-              p = root / d
-              if p.exists():
-                  t = p.read_text()
-                  for line in ('CONFIG_MQ_IOSCHED_ADIOS=y', 'CONFIG_MQ_IOSCHED_DEFAULT_ADIOS=y'):
-                      if line not in t:
-                          t += line + '\n'
-                  p.write_text(t)
-                  print('defconfig 追加完成:', d)
+          print(kc.read_text()[i:i + 200])
           PY
+          grep -n 'MQ_IOSCHED_ADIOS' kernel_platform/common/arch/arm64/configs/gki_defconfig || echo "gki_defconfig 未提及 adios（正确）"
 
       - name: 🏗️ provider（ddk 模块，最快）
         continue-on-error: true
