@@ -195,18 +195,17 @@ jobs:
               text = re.sub(rf'^{k}\s*=\s*\d+\s*$', f'{k} = {v}', text, count=1, flags=re.M)
           mm.write_text(text)
           print('msm-kernel 版本对齐 ->', want)
-          b = root / 'msm-kernel/BUILD.bazel'
+          b = root / 'msm-kernel/sun.bzl'
           s = b.read_text()
-          i = s.find('name = "sun_perf"')
-          m = re.search(r'module_outs\s*=\s*\[', s[i:]) if i >= 0 else None
-          if m:
-              at = i + m.end()
-              if '"net/tls/tls.ko"' not in s[at:at + 20000]:
-                  s = s[:at] + '\n        "net/tls/tls.ko",' + s[at:]
-                  b.write_text(s)
-                  print('module_outs += net/tls/tls.ko')
+          marker = '_sun_in_tree_modules = ['
+          i = s.find(marker)
+          if i >= 0 and '"net/tls/tls.ko"' not in s[i:i + 40000]:
+              at = i + len(marker)
+              s = s[:at] + '\n        "net/tls/tls.ko",' + s[at:]
+              b.write_text(s)
+              print('sun.bzl _sun_in_tree_modules += net/tls/tls.ko')
           else:
-              print('sun_perf 未找到 module_outs 列表（交给自愈脚本）')
+              print('tls 已在清单内或未找到标记')
           PY
           grep -nE '^(VERSION|PATCHLEVEL|SUBLEVEL) ' src/kernel_platform/msm-kernel/Makefile | head -3
 

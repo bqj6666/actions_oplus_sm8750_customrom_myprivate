@@ -51,24 +51,26 @@ def fix_module_outs(root: Path, log: str):
     names = [n for n in dict.fromkeys(names) if n.endswith('.ko')]
     if not names:
         return None
-    p = root / 'kernel_platform/msm-kernel/BUILD.bazel'
-    if not p.exists():
-        return 'module_outs: BUILD.bazel missing'
-    s = p.read_text()
-    i = s.find('name = "sun_perf"')
-    if i < 0:
-        return 'module_outs: sun_perf not found'
-    m = re.search(r'module_outs\s*=\s*\[', s[i:])
-    if not m:
-        return 'module_outs: no module_outs list in sun_perf'
-    at = i + m.end()
-    window = s[at:at + 20000]
-    add = [n for n in names if f'"{n}"' not in window]
-    if not add:
-        return 'module_outs: already present'
-    s = s[:at] + ''.join(f'\n        "{n}",' for n in add) + s[at:]
-    p.write_text(s)
-    return f'module_outs: added {add}'
+    # sun_perf 的 module_outs 实际是 sun.bzl 里的 _sun_in_tree_modules
+    cands = [root / 'kernel_platform/msm-kernel/sun.bzl',
+             root / 'kernel_platform/msm-kernel/BUILD.bazel']
+    for p in cands:
+        if not p.exists():
+            continue
+        s = p.read_text()
+        marker = '_sun_in_tree_modules = [' if p.name == 'sun.bzl' else 'module_outs = ['
+        i = s.find(marker)
+        if i < 0:
+            continue
+        at = i + len(marker)
+        window = s[at:at + 40000]
+        add = [n for n in names if f'"{n}"' not in window]
+        if not add:
+            return f'module_outs: already present in {p.name}'
+        s = s[:at] + ''.join(f'\n        "{n}",' for n in add) + s[at:]
+        p.write_text(s)
+        return f'module_outs: added {add} -> {p.name}'
+    return 'module_outs: no list found'
 
 
 def main():
